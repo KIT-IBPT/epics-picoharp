@@ -1,0 +1,97 @@
+# Do not change this file without authorization from Controls
+
+record(waveform, "SR-DI-PICO-01:FILL") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "65536")
+  field(DESC, "Raw picoharp signal")
+}
+
+record(waveform, "SR-DI-PICO-01:BUCKETS") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern")
+}
+record(waveform, "SR-DI-PICO-01:BUCKETS_60") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern 60s")
+}
+
+record(waveform, "SR-DI-PICO-01:BUCKETS_180") {
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern 180s")
+}
+
+record(ao, "SR-DI-PICO-01:PEAK") {
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "63")
+  field(DESC, "Offset of first peak")
+}
+
+record(ao, "SR-DI-PICO-01:PK_AUTO") {
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "1")
+  field(DESC, "set auto-adjust peak")
+}
+
+record(ai, "SR-DI-PICO-01:FLUX") {
+  field(EGU,  "count/turn")
+  field(PREC, "3")
+  field(DESC, "Counts observed per turn")
+}
+
+record(ao, "SR-DI-PICO-01:TIME") {
+  field(EGU,  "ms")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "60000")
+  field(DESC, "Acquisition time")
+}
+
+record(ai, "SR-DI-PICO-01:MAX_BIN") {
+  field(EGU,  "counts")
+  field(HIGH, "59000")
+  field(HIHI, "65535")
+  field(HSV,  "MINOR")
+  field(HHSV, "MAJOR")
+  field(DESC, "Maximum bin count")
+}
+record(ai, "SR-DI-PICO-01:SHIFT") {
+  field(EGU,  "bucket")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "935")
+  field(DESC, "Circular Shift")
+}
+
+record(ai, "SR-DI-PICO-01:COUNTS_FILL") {
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts from FILL")
+}
+
+record(ai, "SR-DI-PICO-01:COUNTS_5") {
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS")
+}
+
+record(ai, "SR-DI-PICO-01:COUNTS_60") {
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS_60")
+}
+
+record(ai, "SR-DI-PICO-01:COUNTS_180") {
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS_180")
+}
+
+
+
