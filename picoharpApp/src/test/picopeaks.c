@@ -22,6 +22,7 @@ int picopeaks(int shift, int peak, double charge, double * f, double * s)
   double total_counts = 0;
   double perm[BUCKETS];
 
+  /* find first peak */
   for(i = 1; i < VALID_SAMPLES; ++i)
     {
       if(f[i] > pk)
@@ -31,12 +32,15 @@ int picopeaks(int shift, int peak, double charge, double * f, double * s)
         }
     }
 
+  /* peak magic */
   peak = round(matlab_mod(first_peak_auto, 58540.0/936));
 
-  /* magic peaks */
-  if(peak < 1)
+  if(peak < 5)
     {
-      peak = 1;
+      if(peak < 1)
+        {
+          peak = 1;
+        }
     }
   else if(peak > 5 && peak < 58)
     {
@@ -47,6 +51,7 @@ int picopeaks(int shift, int peak, double charge, double * f, double * s)
       peak = 53;
     }
 
+  /* average over samples in each bucket */
   for(k = 0; k < BUCKETS; ++k)
     {
       double sum = 0;
@@ -69,6 +74,7 @@ int picopeaks(int shift, int peak, double charge, double * f, double * s)
       perm[k] = s[k] / total_counts * charge;
     }
   
+  /* circular shift */
   for(k = 0; k < BUCKETS; ++k) 
     {
       s[k] = perm[(k + shift) % BUCKETS] + LOG_PLOT_OFFSET;
