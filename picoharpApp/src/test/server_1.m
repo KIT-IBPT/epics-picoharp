@@ -157,11 +157,6 @@ try
         Ch0 = S0 / total_counts0 * charge ;
         Ch1 = S1 / total_counts1 * charge ;
 
-        Ch_c = pico_c(f, shif, charge);
-        
-        plot(Ch - Ch_c);
-        drawnow;
-        
         CHt(k,:) = Ch0;
         CHt2(m,:)= Ch1;
 
@@ -179,6 +174,14 @@ try
         bucketsf = circshift( CHt(k,:) ,[1 -shift_0]) +1e-8 ;
         bucketsf2 = circshift( CHt2(m,:) ,[1 -shift_0]) +1e-8 ;
 
+        % compare with C version
+        buckets_c = pico_c(buf, shift_0, shif, charge);
+        subplot(2,1,1)
+        plot(buckets)
+        subplot(2,1,2)
+        plot(buckets - buckets_c);
+        drawnow;
+        
         if (length(buckets) == 936)
             % put the pvs
             try

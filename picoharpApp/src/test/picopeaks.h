@@ -1,1 +1,1 @@
-int picopeaks(int shift, double charge, double * f, double * s);
+int picopeaks(int shift, int peak, double charge, double * f, double * s);

@@ -2,120 +2,77 @@
 #include <math.h>
 
 #define BUCKETS 936
+#define LOG_PLOT_OFFSET 1e-8
 #define VALID_SAMPLES 58540
 #define SAMPLES_PER_BUCKET 10
 
-int picopeaks(int shift, double charge, double * f, double * s)
+double matlab_mod(double x, double y)
 {
-  int i, j, k;
+  /* matlab real modulo */
+  double n = floor(x / y);
+  return x - n * y;
+}
 
+int picopeaks(int shift, int peak, double charge, double * f, double * s)
+{
+
+  int i, j, k;
+  double pk = f[0];
+  int first_peak_auto = 1;
   double total_counts = 0;
-  for(k = 0; k < BUCKETS; k++)
+  double perm[BUCKETS];
+
+  for(i = 1; i < VALID_SAMPLES; ++i)
+    {
+      if(f[i] > pk)
+        {
+          pk = f[i];
+          first_peak_auto = i + 1;
+        }
+    }
+
+  peak = round(matlab_mod(first_peak_auto, 58540.0/936));
+
+  /* magic peaks */
+  if(peak < 1)
+    {
+      peak = 1;
+    }
+  else if(peak > 5 && peak < 58)
+    {
+      peak = peak - 5;
+    }
+  else
+    {
+      peak = 53;
+    }
+
+  for(k = 0; k < BUCKETS; ++k)
     {
       double sum = 0;
       int bucket_start = round(VALID_SAMPLES * (k * 1.0 / BUCKETS));
       for(j = 0; j < SAMPLES_PER_BUCKET; ++j)
         {
-          sum += f[bucket_start + j + shift];
+          sum += f[bucket_start + j + peak];
         }
       s[k] = sum;
       total_counts += sum;
     }
 
-  for(k = 0; k < BUCKETS; k++)
+  if(total_counts <= 0)
     {
-      s[k] = s[k] / total_counts * charge;
-    }
-
-  return 0;
-}
-
-/*
-
-#define BUCKETS 936
-#define BUCKETS_PLUS_1 937
-#define VALID_SAMPLES 58540
-#define SAMPLES_PER_BUCKET 10
-
-void rlinspace(double * r, double x, double y, int n)
-{
-  int i;
-  for(i = 0; i < n; ++i)
-    {
-      r[i] = round(x + (y - x) * (i * 1.0 / (n-1)));
-    }
-}
-
-int main()
-{
-  int i, j, k;
-
-  double c[BUCKETS_PLUS_1];
-  int ix[SAMPLES_PER_BUCKET * BUCKETS];
-  double s0[SAMPLES_PER_BUCKET * BUCKETS];
-  double s[BUCKETS];
-  double f[VALID_SAMPLES];
-
-  double charge = 2.0;
-  int shift = 3;
-
-  for(i = 0; i < VALID_SAMPLES; ++i)
-    {
-      f[i] = exp(i * 1.0 / VALID_SAMPLES) * cos(i * 1.0 / VALID_SAMPLES);
-    }
-
-  rlinspace(c, 0, VALID_SAMPLES, BUCKETS_PLUS_1);
-
-  for(i = 0; i < BUCKETS; ++i)
-    {
-      printf("%f\n", c[i]);
+      total_counts = 1;
     }
   
-  for(k = 0; k < BUCKETS; k++)
+  for(k = 0; k < BUCKETS; ++k)
     {
-      for(j = 0; j < SAMPLES_PER_BUCKET; ++j)
-        {
-          ix[k * SAMPLES_PER_BUCKET + j] = c[k] + (j + 1) + shift;
-        }
-    }
-
-  for(i = 0; i < BUCKETS * SAMPLES_PER_BUCKET; ++i)
-    {
-      printf("%d\n", ix[i]);
-    }
-
-  for(i = 0; i < BUCKETS * SAMPLES_PER_BUCKET; ++i)
-    {
-      s0[i] = f[ix[i]-1];
-    }
-
-  for(k = 0; k < BUCKETS; k++)
-    {
-      double sum = 0;
-      for(j = 0; j < SAMPLES_PER_BUCKET; ++j)
-        {
-          sum += s0[k * SAMPLES_PER_BUCKET + j];
-        }
-      s[k] = sum;
+      perm[k] = s[k] / total_counts * charge;
     }
   
-  double total_counts = 0;
-  for(k = 0; k < BUCKETS; k++)
+  for(k = 0; k < BUCKETS; ++k) 
     {
-      double sum = 0;
-      int bucket_start = round(VALID_SAMPLES * (k * 1.0 / BUCKETS));
-      for(j = 0; j < SAMPLES_PER_BUCKET; ++j)
-        {
-          sum += f[bucket_start + j + shift];
-        }
-      s[k] = sum;
-      total_counts += sum;
+      s[k] = perm[(k + shift) % BUCKETS] + LOG_PLOT_OFFSET;
     }
-  for(k = 0; k < BUCKETS; k++)
-    {
-      s[k] = s[k] / total_counts * charge;
-      printf("%32.32f\n", s[k]);
-    }
+  
   return 0;
 }
-*/
