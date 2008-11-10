@@ -6,7 +6,7 @@ include $(TOP)/configure/CONFIG
 # Build an Diamond Support Module
 # -------------------------------
 
-#LIBRARY_IOC += xxx
+LIBRARY_IOC += pico
 
 # xxxRecord.h will be created from xxxRecord.dbd
 #DBDINC += xxx.h
@@ -15,7 +15,7 @@ include $(TOP)/configure/CONFIG
 #DBD += xxx.dbd
 
 # The following are compiled and added to the support library
-#xxx_SRCS += xxxCodeA.c
+pico_SRCS += picoAsyn.c
 #xxx_SRCS += xxxCodeB.c
 
 # We need to link against the EPICS Base libraries
@@ -33,7 +33,7 @@ DBD += picoharp.dbd
 
 # picoharp.dbd will be created from these files
 picoharp_DBD += base.dbd
-#picoharp_DBD += xxx.dbd
+picoharp_DBD += pico.dbd
 
 # picoharp_registerRecordDeviceDriver.cpp will be created
 # picoharp.dbd
@@ -54,7 +54,7 @@ picoharp_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 #picoharp_LIBS += xxx
 
 # We need to link this IOC Application against the EPICS Base libraries
-picoharp_LIBS += $(EPICS_BASE_IOC_LIBS)
+picoharp_LIBS += $(EPICS_BASE_IOC_LIBS) asyn pico
 
 # ---------------------------------------------------
 

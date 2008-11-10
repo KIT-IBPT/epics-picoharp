@@ -24,3 +24,4 @@ EPICS_BASE=/dls_sw/epics/R3.14.8.2/base
 #CAPFAST_TEMPLATES=
 #SCH2EDIF_PATH=
 -include $(TOP)/configure/RELEASE.private
+ASYN=/dls_sw/prod/R3.14.8.2/support/asyn/4-9

@@ -82,3 +82,10 @@ int picopeaks(int shift, int peak, double charge, double * f, double * s)
   
   return 0;
 }
+
+/* TODO
+   1) thread for picoharp reading
+   2) message queue for data
+   3) event for signal
+   4) proper device support? or something else... (genSub)
+*/

@@ -1,0 +1,6 @@
+record(waveform, "TEST1") {
+   field(DTYP, "asynFloat64ArrayIn")
+   field(INP,  "@asyn(TEST1)BUCKETS60")
+   field(FTVL, "DOUBLE")
+   field(NELM, "64")
+}
