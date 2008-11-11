@@ -15,7 +15,7 @@ LIBRARY_IOC += pico
 #DBD += xxx.dbd
 
 # The following are compiled and added to the support library
-pico_SRCS += picoAsyn.c
+pico_SRCS += picoAsyn.c asynHelper.c
 #xxx_SRCS += xxxCodeB.c
 
 # We need to link against the EPICS Base libraries

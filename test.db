@@ -1,6 +1,21 @@
-record(waveform, "TEST1") {
+record(waveform, "BUCKETS60") {
+   field(SCAN, "I/O Intr")
    field(DTYP, "asynFloat64ArrayIn")
    field(INP,  "@asyn(TEST1)BUCKETS60")
    field(FTVL, "DOUBLE")
-   field(NELM, "64")
+   field(NELM, "936")
+}
+
+record(waveform, "BUCKETS120") {
+   field(SCAN, "Event")
+   field(EVNT, "101")
+   field(DTYP, "asynFloat64ArrayIn")
+   field(INP,  "@asyn(TEST1)BUCKETS120")
+   field(FTVL, "DOUBLE")
+   field(NELM, "936")
+}
+
+record(ao, "TEST2") {
+   field(DTYP, "asynFloat64")
+   field(OUT,  "@asyn(TEST1)BUCKETS")
 }
