@@ -18,11 +18,16 @@
  } \
 }
 
-typedef struct COMMANDPAIR
+#define EXPORT_ARRAY(STRUCT, TYPE, MEMBER) \
+{offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE)}
+#define EXPORT_ARRAY_END {0, 0, 0}
+
+typedef struct STRUCTINFO
 {
-  char *name;
-  int value;
-} commandPair;
+  int offset;
+  char * name;
+  int elements;
+} struct_info;
 
 /* common */
 

@@ -1,21 +1,163 @@
-record(waveform, "BUCKETS60") {
-   field(SCAN, "I/O Intr")
-   field(DTYP, "asynFloat64ArrayIn")
-   field(INP,  "@asyn(TEST1)BUCKETS60")
-   field(FTVL, "DOUBLE")
-   field(NELM, "936")
+record(waveform, "TS-DI-PICO-01:FILL") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn(PICO1)fill")
+  field(FTVL, "DOUBLE")
+  field(NELM, "65536")
+  field(DESC, "Raw picoharp signal")
+  field(SCAN, "Event")
+  field(EVNT, "101")
 }
 
-record(waveform, "BUCKETS120") {
-   field(SCAN, "Event")
-   field(EVNT, "101")
-   field(DTYP, "asynFloat64ArrayIn")
-   field(INP,  "@asyn(TEST1)BUCKETS120")
-   field(FTVL, "DOUBLE")
-   field(NELM, "936")
+record(waveform, "TS-DI-PICO-01:BUCKETS") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn(PICO1)buckets")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+record(waveform, "TS-DI-PICO-01:BUCKETS_60") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn(PICO1)buckets60")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern 60s")
+  field(SCAN, "Event")
+  field(EVNT, "101")
 }
 
-record(ao, "TEST2") {
-   field(DTYP, "asynFloat64")
-   field(OUT,  "@asyn(TEST1)BUCKETS")
+record(waveform, "TS-DI-PICO-01:BUCKETS_180") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn(PICO1)buckets180")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern 180s")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ao, "TS-DI-PICO-01:PEAK") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)peak")
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "63")
+  field(DESC, "Offset of first peak")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ao, "TS-DI-PICO-01:PK_AUTO") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)pk_auto")
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "1")
+  field(DESC, "set auto-adjust peak")
+}
+
+record(ai, "TS-DI-PICO-01:FLUX") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)flux")
+  field(EGU,  "count/turn")
+  field(PREC, "3")
+  field(DESC, "Counts observed per turn")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ao, "TS-DI-PICO-01:TIME") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)time")
+  field(EGU,  "ms")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "60000")
+  field(DESC, "Acquisition time")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ai, "TS-DI-PICO-01:MAX_BIN") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)max_bin")
+  field(EGU,  "counts")
+  field(HIGH, "59000")
+  field(HIHI, "65535")
+  field(HSV,  "MINOR")
+  field(HHSV, "MAJOR")
+  field(DESC, "Maximum bin count")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ao, "TS-DI-PICO-01:SHIFT") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)shift")
+  field(EGU,  "bucket")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "935")
+  field(DESC, "Circular Shift")
+}
+
+record(ai, "TS-DI-PICO-01:COUNTS_FILL") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)counts_fill")
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts from FILL")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ai, "TS-DI-PICO-01:COUNTS_5") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)counts_5")
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ai, "TS-DI-PICO-01:COUNTS_60") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)counts_60")
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS_60")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+record(ai, "TS-DI-PICO-01:COUNTS_180") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn(PICO1)counts_180")
+  field(EGU,  "Counts")
+  field(PREC, "0")
+  field(DESC, "Total Counts BUCKETS_180")
+  field(SCAN, "Event")
+  field(EVNT, "101")
+}
+
+# check maximize severity and monitor updates
+
+record(ao, "TS-DI-PICO-01:DCCT") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)current")
+  field(DOL,  "SR21C-DI-DCCT-01:SIGNAL CP")
+  field(OMSL, "closed_loop")
+  field(DESC, "DCCT current")
+}
+
+record(ao, "TS-DI-PICO-01:FREQ") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)freq")
+  field(DOL,  "LI-RF-MOSC-01:FREQ CP")
+  field(OMSL, "closed_loop")
+  field(DESC, "Master oscillator frequency")
 }

@@ -3,7 +3,7 @@
 dbLoadDatabase("dbd/picoharp.dbd")
 picoharp_registerRecordDeviceDriver(pdbbase)
 dbLoadRecords("test.db")
-initPicoAsyn("TEST1", "HELLO")
+initPicoAsyn("PICO1", 101)
 
 iocInit()
 

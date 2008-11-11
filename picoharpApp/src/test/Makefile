@@ -1,5 +1,5 @@
 LDLIBS=-lm
-picopeaks.so: picopeaks.c
+picopeaks.so: ../picopeaks.c
 	$(CC) -shared $< -o $@
 
 clean: 

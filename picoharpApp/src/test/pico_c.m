@@ -4,7 +4,7 @@ if ~libisloaded('picopeaks')
   loadlibrary('picopeaks.so', 'picopeaks.h')
 end
 sp = libpointer('doublePtr', zeros(1, 936));
-calllib('picopeaks', 'picopeaks', shift_0, shif, charge, f, sp);
+calllib('picopeaks', 'pico_peaks_matlab', shift_0, charge, f, sp);
 s = sp.value;
 
 
