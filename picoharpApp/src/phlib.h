@@ -9,11 +9,11 @@
 extern int _stdcall PH_GetLibraryVersion(char* vers);
 extern int _stdcall PH_GetErrorString(char* errstring, int errcode);
 
-extern int _stdcall PH_OpenDevice(int devidx, char* serial); //new since v2.0
-extern int _stdcall PH_CloseDevice(int devidx);  //new since v2.0
+extern int _stdcall PH_OpenDevice(int devidx, char* serial); /*new since v2.0*/
+extern int _stdcall PH_CloseDevice(int devidx);  /*new since v2.0*/
 extern int _stdcall PH_Initialize(int devidx, int mode);
 
-//all functions below can only be used after PH_Initialize
+/*all functions below can only be used after PH_Initialize*/
 
 extern int _stdcall PH_GetHardwareVersion(int devidx, char* model, char* vers);
 extern int _stdcall PH_GetSerialNumber(int devidx, char* serial);
@@ -40,14 +40,14 @@ extern int _stdcall PH_GetFlags(int devidx);
 extern int _stdcall PH_GetElapsedMeasTime(int devidx);
 
 
-//for TT modes
+/*for TT modes*/
 extern int _stdcall PH_TTSetMarkerEdges(int devidx, int me0, int me1, int me2, int me3);
 extern int _stdcall PH_TTReadData(int devidx, unsigned int* buffer, unsigned int count);
 
-//for Routing
-extern int _stdcall PH_GetRouterVersion(int devidx, char* model, char* vers);  //new since v2.0
+/*for Routing*/
+extern int _stdcall PH_GetRouterVersion(int devidx, char* model, char* vers);  /*new since v2.0*/
 extern int _stdcall PH_GetRoutingChannels(int devidx);
 extern int _stdcall PH_EnableRouting(int devidx, int enable);
-extern int _stdcall PH_SetPHR800Input(int devidx, int channel, int level, int edge);  //new since v2.0
-extern int _stdcall PH_SetPHR800CFD(int devidx, int channel, int dscrlevel, int zerocross); //new since v2.0
+extern int _stdcall PH_SetPHR800Input(int devidx, int channel, int level, int edge);  /*new since v2.0*/
+extern int _stdcall PH_SetPHR800CFD(int devidx, int channel, int dscrlevel, int zerocross); /*new since v2.0*/
  

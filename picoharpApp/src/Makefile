@@ -16,12 +16,13 @@ LIBRARY_IOC += pico
 
 # The following are compiled and added to the support library
 pico_SRCS += picoAsyn.c asynHelper.c picopeaks.c
-#xxx_SRCS += xxxCodeB.c
+
+REALTOP = $(shell python -c "import os; print os.path.realpath('$(TOP)')")/picoharpApp/src
+USR_LDFLAGS = -L$(REALTOP) -Wl,-rpath,$(REALTOP)
+pico_SYS_LIBS += phlib
 
 # We need to link against the EPICS Base libraries
-#xxx_LIBS += $(EPICS_BASE_IOC_LIBS)
-
-
+# xxx_LIBS += $(EPICS_BASE_IOC_LIBS)
 # ------------------------
 # Build an IOC Application
 # ------------------------
