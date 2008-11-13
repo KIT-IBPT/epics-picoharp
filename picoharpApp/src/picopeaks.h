@@ -1,6 +1,8 @@
 #ifndef __PICOPEAKS_H__
 #define __PICOPEAKS_H__
 
+#include <phdefin.h>
+
 #define DEVICE 0
 #define BLOCK 0
 
@@ -8,8 +10,11 @@
 #define BUCKETS 936
 #define LOG_PLOT_OFFSET 1e-8
 #define VALID_SAMPLES 58540
-#define BUFFER_SAMPLES 65536
 #define SAMPLES_PER_BUCKET 10
+#define BUFFERS_60 12
+/*(60/5)*/
+#define BUFFERS_180 36
+/*(180/5)*/
 
 typedef struct PICODATA
 {
@@ -18,7 +23,7 @@ typedef struct PICODATA
   double buckets[BUCKETS];
   double buckets60[BUCKETS];
   double buckets180[BUCKETS];
-  double fill[BUFFER_SAMPLES];
+  double fill[HISTCHAN];
   double peak;
   double pk_auto;
   double flux;
@@ -33,10 +38,15 @@ typedef struct PICODATA
   double freq; /* master oscillator (Hz)*/
   double current; /* DCCT current (mA) */
 
-  /* where does charge come from ? */
-  double samples[BUFFER_SAMPLES];
-  double charge;
-  
+  /* samples and 60 and 180 second buffers */
+
+  double samples[HISTCHAN];
+  double samples60[HISTCHAN];
+  double samples180[HISTCHAN];
+
+  int index60;
+  int index180;
+
   /* PicoHarp sampling parameters (st.cmd) */
   int Offset;
   int nCFDZeroX0;
@@ -45,22 +55,31 @@ typedef struct PICODATA
   int CFDLevel1;
   int SyncDiv;
   int Range;
-  int Tacq;
 
   /* PicoHarp acquisition results */
   int overflow;
-  int totalcounts;
-  int countsbuffer[BUFFER_SAMPLES];
+  int countsbuffer[HISTCHAN];
   char errstr[ERRBUF];
+
+#ifdef PICO_TEST_MATLAB_HEADER
+
+  double buffer60[786432];
+  double buffer180[2359296];
+
+#else
+
+  double buffer60[BUFFERS_60][HISTCHAN];
+  double buffer180[BUFFERS_180][HISTCHAN];
+
+#endif
 
 } PicoData;
 
+void pico_init(PicoData * self);
+int pico_peaks(PicoData * self, int peak, double * f, double * s, double * counts);
 int pico_average(PicoData * self);
-void pico_init(PicoData * self, int Offset, int CFDLevel0, int CFDLevel1, 
-               int CFDZeroX1, int SyncDiv, int Range);
-int pico_peaks(PicoData * self, int peak, double * f, double * s);
-int pico_acquire(PicoData * self);
-void pico_peaks_matlab(int shift, double charge, double * f, double * s);
+int pico_open(PicoData * self);
+int pico_measure (PicoData * self, int time);
 
 #endif
 

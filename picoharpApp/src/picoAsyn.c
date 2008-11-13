@@ -8,6 +8,7 @@
 #include <asynDriver.h>
 #include <asynFloat64Array.h>
 #include <asynFloat64.h>
+#include <asynOctet.h>
 #include <asynDrvUser.h>
 
 #include <dbScan.h>
@@ -58,11 +59,13 @@ typedef struct PICOPVT
 
   char *port;
   int event;
+  int alarm;
 
   asynInterface Common;
   asynInterface DrvUser;
   asynInterface Float64Array;
   asynInterface Float64;
+  asynInterface Octet;
 
   PicoData data;
 
@@ -84,11 +87,11 @@ pico_write (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
 
   epicsMutexMustLock (pico->lock);
 
-  /* use tabulated field offset for this reason as memcpy destination */
-  memcpy (((char *) &pico->data) + pico->info[pasynUser->reason].offset,
+  memcpy (MEMBER_LOOKUP(&pico->data, pico->info, pasynUser->reason),
 	  value, elements * sizeof (epicsFloat64));
 
   epicsMutexUnlock (pico->lock);
+
   return asynSuccess;
 }
 
@@ -97,6 +100,7 @@ pico_read (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
 	   size_t elements, size_t * nIn)
 {
   PicoPvt *pico = (PicoPvt *) drvPvt;
+  int alarm;
 
   if (pasynUser->reason < 0)
     return (asynError);
@@ -106,15 +110,23 @@ pico_read (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
 
   epicsMutexMustLock (pico->lock);
 
-  /* use tabulated field offset for this reason as memcpy source */
-  memcpy (value,
-	  ((char *) &pico->data) + pico->info[pasynUser->reason].offset,
+  memcpy (value, MEMBER_LOOKUP(&pico->data, pico->info, pasynUser->reason),
 	  elements * sizeof (epicsFloat64));
 
   *nIn = elements;
+
+  alarm = pico->alarm;
+
   epicsMutexUnlock (pico->lock);
 
-  return asynSuccess;
+  if (alarm)
+    {
+      return asynError;
+    }
+  else
+    {
+      return asynSuccess;
+    }
 }
 
 static asynStatus
@@ -130,6 +142,19 @@ pico_read_adapter (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value)
   return pico_read (drvPvt, pasynUser, value, 1, &nIn);
 }
 
+static asynStatus
+oct_read_raw (void *drvPvt, asynUser * pasynUser, char *data,
+	      size_t numchars, size_t * nbytesTransferred, int *eomReason)
+{
+  PicoPvt *pico = (PicoPvt *) drvPvt;
+  epicsMutexLock (pico->lock);
+  snprintf (data, numchars, "%s", pico->data.errstr);
+  *nbytesTransferred = numchars;
+  *eomReason = 0;
+  epicsMutexUnlock (pico->lock);
+  return asynSuccess;
+}
+
 static asynFloat64Array asynFloat64ArrayImpl = { pico_write, pico_read };
 static asynFloat64 asynFloat64Impl =
   { pico_write_adapter, pico_read_adapter };
@@ -139,6 +164,7 @@ static asynCommon asynCommonImpl = { common_report, common_connect,
 static asynDrvUser asynDrvUserImpl = { drvuser_create, drvuser_get_type,
   drvuser_destroy
 };
+static asynOctet asynOctetImpl = { NULL, NULL, NULL, oct_read_raw };
 
 /* I/O and calculation thread */
 
@@ -147,18 +173,37 @@ picoThreadFunc (void *pvt)
 {
 
   PicoPvt *pico = (PicoPvt *) pvt;
-  int n;
-  double samples[BUFFER_SAMPLES];
+  int time;
+
+  epicsMutexMustLock (pico->lock);
+  pico_init (&pico->data);
+  epicsMutexUnlock (pico->lock);
 
   while (1)
     {
 
-      pico_acquire (&pico->data);
+      /* acquire the data (usually 5s) */
 
-      /* do the work */
+      epicsMutexMustLock (pico->lock);
+      time = pico->data.time;
+      epicsMutexUnlock (pico->lock);
+
+      pico_measure (&pico->data, time);
+
+      /* do the averaging */
 
       epicsMutexMustLock (pico->lock);
 
+      /* check for PicoHarp errors */
+      if (strcmp (pico->data.errstr, "ERROR_NONE") == 0)
+	{
+	  pico->alarm = 0;
+	}
+      else
+	{
+	  pico->alarm = 0;
+	}
+#if 0
       /* some debugging info */
       n = 0;
       while (1)
@@ -170,9 +215,7 @@ picoThreadFunc (void *pvt)
 	  printf ("%s: %f\n", pico->info[n].name, *value);
 	  n++;
 	}
-
-      memcpy (pico->data.samples, samples, sizeof (samples));
-
+#endif
       pico_average (&pico->data);
 
       epicsMutexUnlock (pico->lock);
@@ -203,13 +246,18 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   pico->lock = epicsMutexMustCreate ();
   pico->event = event;
 
-  pico_init (&pico->data, Offset, CFDLevel0, CFDLevel1, CFDZeroX1, SyncDiv,
-	     Range);
+  pico->data.Offset = Offset;
+  pico->data.CFDLevel0 = CFDLevel0;
+  pico->data.CFDLevel1 = CFDLevel1;
+  pico->data.CFDZeroX1 = CFDZeroX1;
+  pico->data.SyncDiv = SyncDiv;
+  pico->data.Range = Range;
 
   DECLARE_INTERFACE (pico, Common, asynCommonImpl);
   DECLARE_INTERFACE (pico, DrvUser, asynDrvUserImpl);
   DECLARE_INTERFACE (pico, Float64Array, asynFloat64ArrayImpl);
   DECLARE_INTERFACE (pico, Float64, asynFloat64Impl);
+  DECLARE_INTERFACE (pico, Octet, asynOctetImpl);
 
   ASYNMUSTSUCCEED (pasynManager->
 		   registerPort (port, ASYN_MULTIDEVICE, 1, 0, 0),
@@ -228,6 +276,8 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   ASYNMUSTSUCCEED (pasynFloat64Base->initialize (port, &pico->Float64),
 		   "PicoAsyn: Can't register float64Array.\n");
 
+  ASYNMUSTSUCCEED (pasynOctetBase->initialize (port, &pico->Octet, 0, 0, 0),
+		   "PicoAsyn: Can't register Octet.\n");
   thread =
     epicsThreadCreate (port, 0, 1024 * 1024, picoThreadFunc, (void *) pico);
 
@@ -245,14 +295,9 @@ static const iocshArg initArg5 = { "CFDZeroX1", iocshArgInt };
 static const iocshArg initArg6 = { "SyncDiv", iocshArgInt };
 static const iocshArg initArg7 = { "Range", iocshArgInt };
 
-static const iocshArg *const initArgs[] = { &initArg0,
-  &initArg1,
-  &initArg2,
-  &initArg3,
-  &initArg4,
-  &initArg5,
-  &initArg6,
-  &initArg7
+static const iocshArg *const initArgs[] = {
+  &initArg0, &initArg1, &initArg2, &initArg3,
+  &initArg4, &initArg5, &initArg6, &initArg7
 };
 
 static const iocshFuncDef initFuncDef = { "initPicoAsyn", 2, initArgs };
@@ -260,10 +305,7 @@ static const iocshFuncDef initFuncDef = { "initPicoAsyn", 2, initArgs };
 static void
 initCallFunc (const iocshArgBuf * args)
 {
-  initPicoAsyn (args[0].sval,
-		args[1].ival,
-		args[2].ival,
-		args[3].ival,
+  initPicoAsyn (args[0].sval, args[1].ival, args[2].ival, args[3].ival,
 		args[4].ival, args[5].ival, args[6].ival, args[7].ival);
 }
 

@@ -8,16 +8,19 @@
 
 #include "picopeaks.h"
 
+/* TODO return from function on error */
+
 #define PICO_CHECK(call) \
 { \
-int status = call; \
-if(status < 0) \
+int __status = call; \
+if(__status < 0) \
 { \
-  char errstr0[ERRBUF]; \
-  PH_GetErrorString(errstr0, status); \
-  sprintf(self->errstr, #call " %s", errstr0); \
-  printf("%s\n", self->errstr); \
+  char __errstr[ERRBUF]; \
+  PH_GetErrorString(__errstr, __status); \
+  sprintf(self->errstr, "%s", __errstr); \
+  printf(#call " %s\n", self->errstr); \
   PH_CloseDevice(DEVICE); \
+  return -1; \
 } \
 }
 
@@ -80,11 +83,11 @@ pico_detect_peak (PicoData * self)
 }
 
 int
-pico_peaks (PicoData * self, int peak, double *f, double *s)
+pico_peaks (PicoData * self, int peak, double *f, double *s, double *total_counts)
 {
 
   int j, k;
-  double total_counts = 0;
+  *total_counts = 0;
   double perm[BUCKETS];
 
   /* average over samples in each bucket */
@@ -97,17 +100,17 @@ pico_peaks (PicoData * self, int peak, double *f, double *s)
 	  sum += f[bucket_start + j + peak];
 	}
       s[k] = sum;
-      total_counts += sum;
+      *total_counts += sum;
     }
 
-  if (total_counts <= 0)
+  if (*total_counts <= 0)
     {
-      total_counts = 1;
+      *total_counts = 1;
     }
 
   for (k = 0; k < BUCKETS; ++k)
     {
-      perm[k] = s[k] / total_counts * self->charge;
+      perm[k] = s[k] / *total_counts * self->current;
     }
 
   /* circular shift */
@@ -122,22 +125,24 @@ pico_peaks (PicoData * self, int peak, double *f, double *s)
 int
 pico_average (PicoData * self)
 {
-  int n;
-  double sum_counts = 0.0;
+
+  int n, k;
+  self->counts_fill = 0.0;
   /* all counts > 0 */
   double max_bin = 0.0;
 
-  for (n = 0; n < BUFFER_SAMPLES; ++n)
+  for (n = 0; n < HISTCHAN; ++n)
     {
       self->samples[n] = self->countsbuffer[n];
+      self->fill[n] = self->samples[n] + LOG_PLOT_OFFSET;
     }
 
-  for (n = 0; n < BUFFER_SAMPLES; ++n)
+  for (n = 0; n < HISTCHAN; ++n)
     {
-      sum_counts += self->samples[n];
+      self->counts_fill += self->samples[n];
     }
 
-  for (n = 0; n < BUFFER_SAMPLES; ++n)
+  for (n = 0; n < HISTCHAN; ++n)
     {
       if (self->samples[n] > max_bin)
 	{
@@ -145,38 +150,59 @@ pico_average (PicoData * self)
 	}
     }
 
-  self->flux = sum_counts / self->time * 1000 / self->freq * BUCKETS;
+  self->flux = self->counts_fill / self->time * 1000 / self->freq * BUCKETS;
+
   self->max_bin = max_bin;
 
+  int peak = pico_detect_peak (self);
+
+  /* 60 and 180 second averages */
+
+  memcpy(&self->buffer60[self->index60][0], self->samples,
+         HISTCHAN * sizeof(double));
+
+  memcpy(&self->buffer180[self->index180][0], self->samples,
+         HISTCHAN * sizeof(double));
+
+  self->index60 = (self->index60 + 1) % BUFFERS_60;
+  self->index180 = (self->index180 + 1) % BUFFERS_180;
+
+  memset(self->samples60, 0, HISTCHAN * sizeof(double));
+  memset(self->samples180, 0, HISTCHAN * sizeof(double));
+
+  for(k = 0; k < BUFFERS_60; ++k)
+    {
+      for(n = 0; n < HISTCHAN; ++n) 
+        {
+          self->samples60[n] += self->buffer60[k][n];
+        }
+    }
+
+  for(k = 0; k < BUFFERS_180; ++k)
+    {
+      for(n = 0; n < HISTCHAN; ++n) 
+        {
+          self->samples180[n] += self->buffer180[k][n];
+        }
+    }
+
+  pico_peaks (self, peak, self->samples, self->buckets, &self->counts_5);
+  pico_peaks (self, peak, self->samples60, self->buckets60, &self->counts_60);
+  pico_peaks (self, peak, self->samples180, self->buckets180, 
+              &self->counts_180);
+
+  /*
   for (n = 0; n < BUCKETS; ++n)
     {
       self->buckets60[n] = self->buckets60[n] + 1;
       self->buckets180[n] = self->samples[n];
     }
-
-  int peak = pico_detect_peak (self);
-
-  pico_peaks (self, peak, self->samples, self->buckets);
-  /*picopeaks(self, self->samples, self->buckets60); */
-  /* pico_peaks(self, peak, self->samples, self->buckets180); */
-
-  return 0;
-}
-
-int
-pico_acquire (PicoData * self)
-{
-  int n;
-  for (n = 0; n < BUFFER_SAMPLES; ++n)
-    {
-      self->countsbuffer[n] = n * 10;
-    }
+  */
   return 0;
 }
 
 void
-pico_init (PicoData * self, int Offset, int CFDLevel0, int CFDLevel1,
-	   int CFDZeroX1, int SyncDiv, int Range)
+pico_init (PicoData * self)
 {
   /* initialize defaults */
   self->pk_auto = 1;
@@ -186,52 +212,40 @@ pico_init (PicoData * self, int Offset, int CFDLevel0, int CFDLevel1,
   self->counts_60 = 1;
   self->counts_180 = 1;
   self->freq = 499652713;
-  self->charge = 10;
+  self->current = 10;
   self->time = 5000;
-
-  self->Offset = Offset;
-  self->CFDLevel0 = CFDLevel0;
-  self->CFDLevel1 = CFDLevel1;
-  self->CFDZeroX1 = CFDZeroX1;
-  self->SyncDiv = SyncDiv;
-  self->Range = Range;
-
+  
+  pico_open(self);
+  
 }
 
 int
-pico_measure (PicoData * self)
+pico_measure (PicoData * self, int time)
 {
 
   int Flags = 0;
-  int n;
 
   self->overflow = 0;
-  self->totalcounts = 0;
 
   PICO_CHECK (PH_ClearHistMem (DEVICE, BLOCK));
-  PICO_CHECK (PH_StartMeas (DEVICE, self->Tacq));
+  PICO_CHECK (PH_StartMeas (DEVICE, time));
 
   while (1)
     {
-      if (PH_CTCStatus (DEVICE))
+      int done = 0;
+      PICO_CHECK (done = PH_CTCStatus(DEVICE));
+      if(done)
 	break;
-      /* need delay here */
+      usleep(0.01);
     }
 
   PICO_CHECK (PH_StopMeas (DEVICE));
-
   PICO_CHECK (PH_GetBlock (DEVICE, self->countsbuffer, BLOCK));
   PICO_CHECK (Flags = PH_GetFlags (DEVICE));
-
 
   if (Flags & FLAG_OVERFLOW)
     {
       self->overflow = 1;
-    }
-
-  for (n = 0; n < HISTCHAN; ++n)
-    {
-      self->totalcounts += self->countsbuffer[n];
     }
 
   return 0;
@@ -285,34 +299,13 @@ pico_open (PicoData * self)
 
 }
 
-#ifdef PICO_TEST_MATLAB
-/* matlab test case interface */
-void
-pico_peaks_matlab (int shift, double charge, double *f, double *s)
-{
-  PicoData self;
-  int peak;
-  self.pk_auto = 1;
-  self.shift = shift;
-  self.charge = charge;
-  memcpy (self.samples, f, sizeof (self.samples));
-
-  peak = pico_detect_peak (&self);
-  pico_peaks (&self, peak, self.samples, self.buckets);
-
-  memcpy (s, self.buckets, sizeof (self.buckets));
-}
-#endif
-
 #ifdef PICO_TEST_MAIN
+static PicoData p;
 int
 main ()
 {
-
-  PicoData p;
-  p.Tacq = 100;
-  int status = pico_open (&p);
-  pico_measure (&p);
+  pico_init (&p);
+  pico_measure (&p, 5000);
   printf ("pico_open: %s\n", p.errstr);
 }
 #endif

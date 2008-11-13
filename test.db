@@ -45,8 +45,6 @@ record(ao, "TS-DI-PICO-01:PEAK") {
   field(LOPR, "1")
   field(HOPR, "63")
   field(DESC, "Offset of first peak")
-  field(SCAN, "Event")
-  field(EVNT, "101")
 }
 
 record(ao, "TS-DI-PICO-01:PK_AUTO") {
@@ -77,8 +75,6 @@ record(ao, "TS-DI-PICO-01:TIME") {
   field(LOPR, "1")
   field(HOPR, "60000")
   field(DESC, "Acquisition time")
-  field(SCAN, "Event")
-  field(EVNT, "101")
 }
 
 record(ai, "TS-DI-PICO-01:MAX_BIN") {
@@ -144,12 +140,10 @@ record(ai, "TS-DI-PICO-01:COUNTS_180") {
   field(EVNT, "101")
 }
 
-# check maximize severity and monitor updates
-
 record(ao, "TS-DI-PICO-01:DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)current")
-  field(DOL,  "SR21C-DI-DCCT-01:SIGNAL CP")
+  field(DOL,  "SR21C-DI-DCCT-01:SIGNAL CP MS")
   field(OMSL, "closed_loop")
   field(DESC, "DCCT current")
 }
@@ -157,7 +151,14 @@ record(ao, "TS-DI-PICO-01:DCCT") {
 record(ao, "TS-DI-PICO-01:FREQ") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)freq")
-  field(DOL,  "LI-RF-MOSC-01:FREQ CP")
+  field(DOL,  "LI-RF-MOSC-01:FREQ CP MS")
   field(OMSL, "closed_loop")
   field(DESC, "Master oscillator frequency")
+}
+
+record(stringin, "TS-DI-PICO-01:ERROR") {
+  field(SCAN, "1 second")
+  field(DTYP, "asynOctetRead")
+  field(INP,  "@asyn(PICO1)")
+  field(DESC, "Picoharp error string")
 }

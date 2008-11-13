@@ -1,5 +1,7 @@
 function server_1
 
+pico_init_c;
+
 % t is acquisition time in ms: t = 5000 (ms)
 % shif is bin position of the the first maximum: ex shif = 38
 % CFDZeroX0 zero crossing of the clock in mV: ex CFDZeroX0 = 10 (between 0
@@ -48,10 +50,10 @@ CHt2 = [] ;
 
 try
     while 1
-        k = k + 1
-        m = m + 1
+        k = k + 1;
+        m = m + 1;
         try
-        t = lcaGet('SR-DI-PICO-01:TIME')
+        t = lcaGet('SR-DI-PICO-01:TIME');
         if isnan(t)
             t=5000;
         end
@@ -64,28 +66,29 @@ try
 
 
         catch
-            t = 5000
-            pk_auto = 1
+            t = 5000;
+            pk_auto = 1;
             disp(['cannot lcaGet PVs'])
             disp('set arbitrary pk_auto')
         end
         [buf, co] = picomeasure(t);
    
         try
-            frev = lcaGet('LI-RF-MOSC-01:FREQ')
+            frev = lcaGet('LI-RF-MOSC-01:FREQ');
             if isnan(frev)
-                frev = 499652713
+                frev = 499652713;
             end
                 
         catch
-            frev = 499652713
+            frev = 499652713;
         end
+
         CountsperTurn = co /t * 1000 / frev * 936 ;
         bufc = double(buf);
         buf0(k,:) = bufc ;
         buf1(m,:) = bufc ;
 
-        max_bin = max(bufc)
+        max_bin = max(bufc);
 
         f =bufc(1:58540);
         f0 =sum(buf0(:,1:58540),1);
@@ -95,21 +98,21 @@ try
         c=c(1:end-1);
 
         if pk_auto==1
-            [pk, first_peak_auto] = max(f)
+            [pk, first_peak_auto] = max(f);
             shif = round(mod(first_peak_auto, 58540/936) );
             if  shif < 5
-                disp('<5')
-                shif = max(shif,1)
+                disp('<5');
+                shif = max(shif,1);
             elseif (shif > 5 & shif < 58)
-                shif = shif - 5
+                shif = shif - 5;
             else
-                shif = 53
+                shif = 53;
             end
             try
-                lcaPut('SR-DI-PICO-01:PEAK',shif)
+                lcaPut('SR-DI-PICO-01:PEAK',shif);
             catch
                 disp(['cannot lcaGet PVs'])
-                pause(10)
+                pause(10);
             end
         else
             try
@@ -124,9 +127,9 @@ try
         end
 
         try
-            charge = lcaGet('SR21C-DI-DCCT-01:CHARGE')
+            charge = lcaGet('SR21C-DI-DCCT-01:CHARGE');
         catch
-            charge = 0
+            charge = 0;
             disp('no DCCT')
         end
 
@@ -135,22 +138,22 @@ try
         S0 = sum(reshape(f0(ix),10,936)) ;
         S1 = sum(reshape(f1(ix),10,936)) ;
 
-        total_counts = sum(S)
-        tc = co
-        total_counts0 = sum(S0)
-        total_counts1 = sum(S1)
+        total_counts = sum(S);
+        tc = co;
+        total_counts0 = sum(S0);
+        total_counts1 = sum(S1);
 
         if total_counts==0
-            total_counts=1
+            total_counts=1;
         end
         if total_counts0==0
-            total_counts0=1
+            total_counts0=1;
         end
         if total_counts1==0
-            total_counts1=1
+            total_counts1=1;
         end
         if charge<0.001
-            charge=0.00001
+            charge=0.00001;
         end
 
         Ch = S / total_counts * charge ;
@@ -162,26 +165,20 @@ try
 
         fillpico = bufc + 1e-8 ;
         try
-            shift_0 =lcaGet('SR-DI-PICO-01:SHIFT')
+            shift_0 =lcaGet('SR-DI-PICO-01:SHIFT');
             if isnan(shift_0)
                 shift_0 = 650;
             end
         catch
-            disp(['cannot lcaGet PVs'])
+            disp(['cannot lcaGet PVs']);
             pause(10)
         end
         buckets = circshift( Ch ,[1 -shift_0] ) + 1e-8 ;
         bucketsf = circshift( CHt(k,:) ,[1 -shift_0]) +1e-8 ;
         bucketsf2 = circshift( CHt2(m,:) ,[1 -shift_0]) +1e-8 ;
 
-        % compare with C version
-        buckets_c = pico_c(buf, shift_0, shif, charge);
-        subplot(2,1,1)
-        plot(buckets)
-        subplot(2,1,2)
-        plot(buckets - buckets_c);
-        drawnow;
-        
+        pico_test_c;
+
         if (length(buckets) == 936)
             % put the pvs
             try
@@ -243,12 +240,13 @@ try
         end
 
         if (k==12)
-            k  = 0
+            k  = 0;
         end
 
         if (m==36)
-            m  = 0
+            m  = 0;
         end
+
     end
 catch
     closedev;
