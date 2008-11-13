@@ -4,10 +4,10 @@
 #include <asynDriver.h>
 #include <asynDrvUser.h>
 
-#define DECLARE_INTERFACE(self, typ, impl) \
+#define DECLARE_INTERFACE(self, typ, impl, pvt) \
   self->typ.interfaceType = asyn ## typ ## Type; \
   self->typ.pinterface = &impl; \
-  self->typ.drvPvt = self;
+  self->typ.drvPvt = pvt;
 
 #define ASYNMUSTSUCCEED(e, m) \
 { \

@@ -48,11 +48,6 @@ static struct_info picoStructInfo[] = {
 
 typedef struct PICOPVT
 {
-  /* 
-     data inheritance: 
-     must contain this mapping first to use the 
-     generic DrvUser functions 
-   */
   struct_info *info;
 
   epicsMutexId lock;
@@ -201,7 +196,7 @@ picoThreadFunc (void *pvt)
 	}
       else
 	{
-	  pico->alarm = 0;
+	  pico->alarm = 1;
 	}
 #if 0
       /* some debugging info */
@@ -253,11 +248,11 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   pico->data.SyncDiv = SyncDiv;
   pico->data.Range = Range;
 
-  DECLARE_INTERFACE (pico, Common, asynCommonImpl);
-  DECLARE_INTERFACE (pico, DrvUser, asynDrvUserImpl);
-  DECLARE_INTERFACE (pico, Float64Array, asynFloat64ArrayImpl);
-  DECLARE_INTERFACE (pico, Float64, asynFloat64Impl);
-  DECLARE_INTERFACE (pico, Octet, asynOctetImpl);
+  DECLARE_INTERFACE (pico, Common, asynCommonImpl, pico);
+  DECLARE_INTERFACE (pico, DrvUser, asynDrvUserImpl, pico->info);
+  DECLARE_INTERFACE (pico, Float64Array, asynFloat64ArrayImpl, pico);
+  DECLARE_INTERFACE (pico, Float64, asynFloat64Impl, pico);
+  DECLARE_INTERFACE (pico, Octet, asynOctetImpl, pico);
 
   ASYNMUSTSUCCEED (pasynManager->
 		   registerPort (port, ASYN_MULTIDEVICE, 1, 0, 0),

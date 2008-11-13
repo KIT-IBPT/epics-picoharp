@@ -9,7 +9,7 @@ asynStatus
 drvuser_create (void *drvPvt, asynUser * pasynUser,
 		const char *drvInfo, const char **pptypeName, size_t * psize)
 {
-  struct_info *map = *((struct_info **) drvPvt);
+  struct_info *map = (struct_info *) drvPvt;
   if (drvInfo == 0)
     {
       return (asynError);
@@ -40,7 +40,7 @@ asynStatus
 drvuser_get_type (void *drvPvt, asynUser * pasynUser,
 		  const char **pptypeName, size_t * psize)
 {
-  struct_info *map = *((struct_info **) drvPvt);
+  struct_info *map = (struct_info *) drvPvt;
   int command = pasynUser->reason;
   *pptypeName = NULL;
   *psize = 0;
