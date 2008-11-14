@@ -1,4 +1,4 @@
-record(waveform, "TS-DI-PICO-01:FILL") {
+record(waveform, "$(DEVICE):FILL") {
   field(DTYP, "asynFloat64ArrayIn")
   field(INP,  "@asyn(PICO1)fill")
   field(FTVL, "DOUBLE")
@@ -8,7 +8,7 @@ record(waveform, "TS-DI-PICO-01:FILL") {
   field(EVNT, "101")
 }
 
-record(waveform, "TS-DI-PICO-01:BUCKETS") {
+record(waveform, "$(DEVICE):BUCKETS") {
   field(DTYP, "asynFloat64ArrayIn")
   field(INP,  "@asyn(PICO1)buckets")
   field(FTVL, "DOUBLE")
@@ -17,7 +17,7 @@ record(waveform, "TS-DI-PICO-01:BUCKETS") {
   field(SCAN, "Event")
   field(EVNT, "101")
 }
-record(waveform, "TS-DI-PICO-01:BUCKETS_60") {
+record(waveform, "$(DEVICE):BUCKETS_60") {
   field(DTYP, "asynFloat64ArrayIn")
   field(INP,  "@asyn(PICO1)buckets60")
   field(FTVL, "DOUBLE")
@@ -27,7 +27,7 @@ record(waveform, "TS-DI-PICO-01:BUCKETS_60") {
   field(EVNT, "101")
 }
 
-record(waveform, "TS-DI-PICO-01:BUCKETS_180") {
+record(waveform, "$(DEVICE):BUCKETS_180") {
   field(DTYP, "asynFloat64ArrayIn")
   field(INP,  "@asyn(PICO1)buckets180")
   field(FTVL, "DOUBLE")
@@ -37,7 +37,7 @@ record(waveform, "TS-DI-PICO-01:BUCKETS_180") {
   field(EVNT, "101")
 }
 
-record(ao, "TS-DI-PICO-01:PEAK") {
+record(ao, "$(DEVICE):PEAK") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)peak")
@@ -48,7 +48,7 @@ record(ao, "TS-DI-PICO-01:PEAK") {
   field(DESC, "Offset of first peak")
 }
 
-record(ao, "TS-DI-PICO-01:PK_AUTO") {
+record(ao, "$(DEVICE):PK_AUTO") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)pk_auto")
@@ -59,7 +59,7 @@ record(ao, "TS-DI-PICO-01:PK_AUTO") {
   field(DESC, "set auto-adjust peak")
 }
 
-record(ai, "TS-DI-PICO-01:FLUX") {
+record(ai, "$(DEVICE):FLUX") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)flux")
   field(EGU,  "count/turn")
@@ -69,7 +69,7 @@ record(ai, "TS-DI-PICO-01:FLUX") {
   field(EVNT, "101")
 }
 
-record(ao, "TS-DI-PICO-01:TIME") {
+record(ao, "$(DEVICE):TIME") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)time")
@@ -80,7 +80,7 @@ record(ao, "TS-DI-PICO-01:TIME") {
   field(DESC, "Acquisition time")
 }
 
-record(ai, "TS-DI-PICO-01:MAX_BIN") {
+record(ai, "$(DEVICE):MAX_BIN") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)max_bin")
   field(EGU,  "counts")
@@ -93,7 +93,7 @@ record(ai, "TS-DI-PICO-01:MAX_BIN") {
   field(EVNT, "101")
 }
 
-record(ao, "TS-DI-PICO-01:SHIFT") {
+record(ao, "$(DEVICE):SHIFT") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)shift")
@@ -104,7 +104,7 @@ record(ao, "TS-DI-PICO-01:SHIFT") {
   field(DESC, "Circular Shift")
 }
 
-record(ai, "TS-DI-PICO-01:COUNTS_FILL") {
+record(ai, "$(DEVICE):COUNTS_FILL") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)counts_fill")
   field(EGU,  "Counts")
@@ -114,7 +114,7 @@ record(ai, "TS-DI-PICO-01:COUNTS_FILL") {
   field(EVNT, "101")
 }
 
-record(ai, "TS-DI-PICO-01:COUNTS_5") {
+record(ai, "$(DEVICE):COUNTS_5") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)counts_5")
   field(EGU,  "Counts")
@@ -124,7 +124,7 @@ record(ai, "TS-DI-PICO-01:COUNTS_5") {
   field(EVNT, "101")
 }
 
-record(ai, "TS-DI-PICO-01:COUNTS_60") {
+record(ai, "$(DEVICE):COUNTS_60") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)counts_60")
   field(EGU,  "Counts")
@@ -134,7 +134,7 @@ record(ai, "TS-DI-PICO-01:COUNTS_60") {
   field(EVNT, "101")
 }
 
-record(ai, "TS-DI-PICO-01:COUNTS_180") {
+record(ai, "$(DEVICE):COUNTS_180") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn(PICO1)counts_180")
   field(EGU,  "Counts")
@@ -144,7 +144,7 @@ record(ai, "TS-DI-PICO-01:COUNTS_180") {
   field(EVNT, "101")
 }
 
-record(ao, "TS-DI-PICO-01:DCCT") {
+record(ao, "$(DEVICE):DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)current")
   field(DOL,  "SR21C-DI-DCCT-01:SIGNAL CP MS")
@@ -152,16 +152,16 @@ record(ao, "TS-DI-PICO-01:DCCT") {
   field(DESC, "DCCT current")
 }
 
-record(ao, "TS-DI-PICO-01:DCCT:ALARM") {
+record(ao, "$(DEVICE):DCCT:ALARM") {
   field(SCAN, ".1 second")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)dcct_alarm")
-  field(DOL,  "TS-DI-PICO-01:DCCT.SEVR")
+  field(DOL,  "$(DEVICE):DCCT.SEVR")
   field(OMSL, "closed_loop")
   field(DESC, "DCCT alarm status")
 }
 
-record(ao, "TS-DI-PICO-01:FREQ") {
+record(ao, "$(DEVICE):FREQ") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)freq")
   field(DOL,  "LI-RF-MOSC-01:FREQ CP MS")
@@ -169,7 +169,7 @@ record(ao, "TS-DI-PICO-01:FREQ") {
   field(DESC, "Master oscillator frequency")
 }
 
-record(stringin, "TS-DI-PICO-01:ERROR") {
+record(stringin, "$(DEVICE):ERROR") {
   field(SCAN, "1 second")
   field(DTYP, "asynOctetRead")
   field(INP,  "@asyn(PICO1)")

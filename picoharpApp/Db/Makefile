@@ -13,7 +13,7 @@ include $(TOP)/configure/CONFIG
 #
 #DB += motor.template
 #DB += basic_motor.template
-
+DB += picoharp.db
 #----------------------------------------------------
 # In a Diamond IOC Application, build db files from
 # template files like this
