@@ -38,6 +38,7 @@ record(waveform, "TS-DI-PICO-01:BUCKETS_180") {
 }
 
 record(ao, "TS-DI-PICO-01:PEAK") {
+  field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)peak")
   field(EGU,  "bins")
@@ -48,6 +49,7 @@ record(ao, "TS-DI-PICO-01:PEAK") {
 }
 
 record(ao, "TS-DI-PICO-01:PK_AUTO") {
+  field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)pk_auto")
   field(EGU,  "bins")
@@ -68,6 +70,7 @@ record(ai, "TS-DI-PICO-01:FLUX") {
 }
 
 record(ao, "TS-DI-PICO-01:TIME") {
+  field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)time")
   field(EGU,  "ms")
@@ -91,6 +94,7 @@ record(ai, "TS-DI-PICO-01:MAX_BIN") {
 }
 
 record(ao, "TS-DI-PICO-01:SHIFT") {
+  field(PINI, "YES")
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)shift")
   field(EGU,  "bucket")
@@ -162,3 +166,4 @@ record(stringin, "TS-DI-PICO-01:ERROR") {
   field(INP,  "@asyn(PICO1)")
   field(DESC, "Picoharp error string")
 }
+

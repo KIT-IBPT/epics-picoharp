@@ -18,9 +18,11 @@
  } \
 }
 
-#define EXPORT_ARRAY(STRUCT, TYPE, MEMBER) \
-{offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE)}
-#define EXPORT_ARRAY_END {0, 0, 0}
+#define EXPORT_ARRAY(STRUCT, TYPE, MEMBER, ALARMED) \
+{offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE), \
+ALARMED}
+
+#define EXPORT_ARRAY_END {0, 0, 0, 0}
 
 #define MEMBER_LOOKUP(s, info, n) ((char *) s) + info[n].offset
 
@@ -29,6 +31,7 @@ typedef struct STRUCTINFO
   int offset;
   char * name;
   int elements;
+  int alarmed;
 } struct_info;
 
 /* common */

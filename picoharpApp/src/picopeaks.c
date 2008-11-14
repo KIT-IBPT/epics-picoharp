@@ -13,11 +13,11 @@
 #define PICO_CHECK(call) \
 { \
 int __status = call; \
+char __errstr[ERRBUF]; \
+PH_GetErrorString(__errstr, __status); \
+sprintf(self->errstr, "%s", __errstr); \
 if(__status < 0) \
 { \
-  char __errstr[ERRBUF]; \
-  PH_GetErrorString(__errstr, __status); \
-  sprintf(self->errstr, "%s", __errstr); \
   printf(#call " %s\n", self->errstr); \
   PH_CloseDevice(DEVICE); \
   return -1; \

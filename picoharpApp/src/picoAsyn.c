@@ -19,30 +19,33 @@
 #include <epicsString.h>
 #include <cantProceed.h>
 #include <epicsMutex.h>
+#include <epicsEvent.h>
 
 #include "asynHelper.h"
 #include "picopeaks.h"
 
-/* map commands to values using dispatch table
-   only works for doubles */
+/*
+ * mapping for read / write requests
+ * structure, type, member name, alarmed
+ */
 
 static struct_info picoStructInfo[] = {
-  EXPORT_ARRAY (PicoData, double, buckets),
-  EXPORT_ARRAY (PicoData, double, buckets60),
-  EXPORT_ARRAY (PicoData, double, buckets180),
-  EXPORT_ARRAY (PicoData, double, fill),
-  EXPORT_ARRAY (PicoData, double, peak),
-  EXPORT_ARRAY (PicoData, double, pk_auto),
-  EXPORT_ARRAY (PicoData, double, flux),
-  EXPORT_ARRAY (PicoData, double, time),
-  EXPORT_ARRAY (PicoData, double, max_bin),
-  EXPORT_ARRAY (PicoData, double, shift),
-  EXPORT_ARRAY (PicoData, double, counts_fill),
-  EXPORT_ARRAY (PicoData, double, counts_5),
-  EXPORT_ARRAY (PicoData, double, counts_60),
-  EXPORT_ARRAY (PicoData, double, counts_180),
-  EXPORT_ARRAY (PicoData, double, freq),
-  EXPORT_ARRAY (PicoData, double, current),
+  EXPORT_ARRAY (PicoData, double, buckets, 1),
+  EXPORT_ARRAY (PicoData, double, buckets60, 1),
+  EXPORT_ARRAY (PicoData, double, buckets180, 1),
+  EXPORT_ARRAY (PicoData, double, fill, 1),
+  EXPORT_ARRAY (PicoData, double, peak, 0),
+  EXPORT_ARRAY (PicoData, double, pk_auto, 0),
+  EXPORT_ARRAY (PicoData, double, flux, 1),
+  EXPORT_ARRAY (PicoData, double, time, 0),
+  EXPORT_ARRAY (PicoData, double, max_bin, 1),
+  EXPORT_ARRAY (PicoData, double, shift, 0),
+  EXPORT_ARRAY (PicoData, double, counts_fill, 1),
+  EXPORT_ARRAY (PicoData, double, counts_5, 1),
+  EXPORT_ARRAY (PicoData, double, counts_60, 1),
+  EXPORT_ARRAY (PicoData, double, counts_180, 1),
+  EXPORT_ARRAY (PicoData, double, freq, 0),
+  EXPORT_ARRAY (PicoData, double, current, 0),
   EXPORT_ARRAY_END
 };
 
@@ -51,10 +54,13 @@ typedef struct PICOPVT
   struct_info *info;
 
   epicsMutexId lock;
+  epicsEventId started;
 
   char *port;
   int event;
   int alarm;
+
+  char alarm_string[ERRBUF];
 
   asynInterface Common;
   asynInterface DrvUser;
@@ -74,15 +80,21 @@ pico_write (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
 {
   PicoPvt *pico = (PicoPvt *) drvPvt;
 
-  if (pasynUser->reason < 0)
-    return (asynError);
+  int field = pasynUser->reason;
 
-  if (elements > pico->info[pasynUser->reason].elements)
-    return (asynError);
+  if (field < 0)
+    {
+      return (asynError);
+    }
+
+  if (elements > pico->info[field].elements)
+    {
+      return (asynError);
+    }
 
   epicsMutexMustLock (pico->lock);
 
-  memcpy (MEMBER_LOOKUP(&pico->data, pico->info, pasynUser->reason),
+  memcpy (MEMBER_LOOKUP(&pico->data, pico->info, field),
 	  value, elements * sizeof (epicsFloat64));
 
   epicsMutexUnlock (pico->lock);
@@ -95,26 +107,31 @@ pico_read (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
 	   size_t elements, size_t * nIn)
 {
   PicoPvt *pico = (PicoPvt *) drvPvt;
+  int field = pasynUser->reason;
   int alarm;
 
-  if (pasynUser->reason < 0)
-    return (asynError);
+  if (field < 0)
+    {
+      return (asynError);
+    }
 
 #if 0
   printf("reading %s\n", pico->info[pasynUser->reason].name);
 #endif
 
-  if (elements > pico->info[pasynUser->reason].elements)
-    return (asynError);
+  if (elements > pico->info[field].elements)
+    {
+      return (asynError);
+    }
 
   epicsMutexMustLock (pico->lock);
 
-  memcpy (value, MEMBER_LOOKUP(&pico->data, pico->info, pasynUser->reason),
+  memcpy (value, MEMBER_LOOKUP(&pico->data, pico->info, field),
 	  elements * sizeof (epicsFloat64));
 
   *nIn = elements;
 
-  alarm = pico->alarm;
+  alarm = pico->alarm && pico->info[field].alarmed;
 
   epicsMutexUnlock (pico->lock);
 
@@ -147,7 +164,7 @@ oct_read_raw (void *drvPvt, asynUser * pasynUser, char *data,
 {
   PicoPvt *pico = (PicoPvt *) drvPvt;
   epicsMutexLock (pico->lock);
-  snprintf (data, numchars, "%s", pico->data.errstr);
+  snprintf (data, numchars, "%s", pico->alarm_string);
   *nbytesTransferred = numchars;
   *eomReason = 0;
   epicsMutexUnlock (pico->lock);
@@ -176,7 +193,13 @@ picoThreadFunc (void *pvt)
 
   epicsMutexMustLock (pico->lock);
   pico_init (&pico->data);
-  epicsMutexUnlock (pico->lock); 
+#if 1
+  epicsThreadSleep(1.0);
+#endif
+  printf("pico_init\n");
+  epicsMutexUnlock (pico->lock);
+
+  epicsEventSignal (pico->started);
 
   while (1)
     {
@@ -193,8 +216,9 @@ picoThreadFunc (void *pvt)
 
       epicsMutexMustLock (pico->lock);
 
+      strcpy(pico->alarm_string, pico->data.errstr);
       /* check for PicoHarp errors */
-      if (strcmp (pico->data.errstr, "") == 0)
+      if (strcmp (pico->alarm_string, "ERROR_NONE") == 0)
 	{
 	  pico->alarm = 0;
 	}
@@ -243,6 +267,7 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   pico->info = picoStructInfo;
   pico->port = epicsStrDup (port);
   pico->lock = epicsMutexMustCreate ();
+  pico->started = epicsEventMustCreate (epicsEventEmpty);
   pico->event = event;
 
   pico->data.Offset = Offset;
@@ -281,6 +306,8 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   thread =
     epicsThreadCreate (port, 0, 1024 * 1024, picoThreadFunc, (void *) pico);
 
+  epicsEventMustWait (pico->started);
+  
   return 0;
 }
 
