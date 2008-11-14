@@ -37,6 +37,7 @@ typedef struct PICODATA
 
   double freq; /* master oscillator (Hz)*/
   double current; /* DCCT current (mA) */
+  double dcct_alarm; /* DCCT monitor alarm status (!) */
 
   /* samples and 60 and 180 second buffers */
 

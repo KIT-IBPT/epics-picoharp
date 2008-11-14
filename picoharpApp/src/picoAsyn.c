@@ -45,6 +45,7 @@ static struct_info picoStructInfo[] = {
   EXPORT_ARRAY (PicoData, double, counts_60, 1),
   EXPORT_ARRAY (PicoData, double, counts_180, 1),
   EXPORT_ARRAY (PicoData, double, freq, 0),
+  EXPORT_ARRAY (PicoData, double, dcct_alarm, 0),
   EXPORT_ARRAY (PicoData, double, current, 0),
   EXPORT_ARRAY_END
 };
@@ -217,6 +218,13 @@ picoThreadFunc (void *pvt)
       epicsMutexMustLock (pico->lock);
 
       strcpy(pico->alarm_string, pico->data.errstr);
+
+      /* check DCCT alarm state */
+      if(pico->data.dcct_alarm)
+        {
+          snprintf(pico->alarm_string, ERRBUF, "%s", "ERROR_DCCT");
+        }
+
       /* check for PicoHarp errors */
       if (strcmp (pico->alarm_string, "ERROR_NONE") == 0)
 	{

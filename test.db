@@ -152,6 +152,15 @@ record(ao, "TS-DI-PICO-01:DCCT") {
   field(DESC, "DCCT current")
 }
 
+record(ao, "TS-DI-PICO-01:DCCT:ALARM") {
+  field(SCAN, ".1 second")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn(PICO1)dcct_alarm")
+  field(DOL,  "TS-DI-PICO-01:DCCT.SEVR")
+  field(OMSL, "closed_loop")
+  field(DESC, "DCCT alarm status")
+}
+
 record(ao, "TS-DI-PICO-01:FREQ") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn(PICO1)freq")
