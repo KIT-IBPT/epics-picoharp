@@ -51,6 +51,7 @@ typedef struct PICODATA
   int Offset;
   int nCFDZeroX0;
   int CFDLevel0;
+  int CFDZeroX0;
   int CFDZeroX1;
   int CFDLevel1;
   int SyncDiv;

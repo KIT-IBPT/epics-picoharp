@@ -100,6 +100,10 @@ pico_read (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
   if (pasynUser->reason < 0)
     return (asynError);
 
+#if 0
+  printf("reading %s\n", pico->info[pasynUser->reason].name);
+#endif
+
   if (elements > pico->info[pasynUser->reason].elements)
     return (asynError);
 
@@ -172,7 +176,7 @@ picoThreadFunc (void *pvt)
 
   epicsMutexMustLock (pico->lock);
   pico_init (&pico->data);
-  epicsMutexUnlock (pico->lock);
+  epicsMutexUnlock (pico->lock); 
 
   while (1)
     {
@@ -190,7 +194,7 @@ picoThreadFunc (void *pvt)
       epicsMutexMustLock (pico->lock);
 
       /* check for PicoHarp errors */
-      if (strcmp (pico->data.errstr, "ERROR_NONE") == 0)
+      if (strcmp (pico->data.errstr, "") == 0)
 	{
 	  pico->alarm = 0;
 	}
@@ -227,7 +231,7 @@ picoThreadFunc (void *pvt)
 
 int
 initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
-	      int CFDZeroX1, int SyncDiv, int Range)
+	      int CFDZeroX0, int CFDZeroX1, int SyncDiv, int Range)
 {
 
   epicsThreadId thread;
@@ -244,6 +248,7 @@ initPicoAsyn (char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
   pico->data.Offset = Offset;
   pico->data.CFDLevel0 = CFDLevel0;
   pico->data.CFDLevel1 = CFDLevel1;
+  pico->data.CFDZeroX0 = CFDZeroX0;
   pico->data.CFDZeroX1 = CFDZeroX1;
   pico->data.SyncDiv = SyncDiv;
   pico->data.Range = Range;
@@ -286,22 +291,24 @@ static const iocshArg initArg1 = { "Event", iocshArgInt };
 static const iocshArg initArg2 = { "Offset", iocshArgInt };
 static const iocshArg initArg3 = { "CFDLevel0", iocshArgInt };
 static const iocshArg initArg4 = { "CFDLevel1", iocshArgInt };
-static const iocshArg initArg5 = { "CFDZeroX1", iocshArgInt };
-static const iocshArg initArg6 = { "SyncDiv", iocshArgInt };
-static const iocshArg initArg7 = { "Range", iocshArgInt };
+static const iocshArg initArg5 = { "CFDZeroX0", iocshArgInt };
+static const iocshArg initArg6 = { "CFDZeroX1", iocshArgInt };
+static const iocshArg initArg7 = { "SyncDiv", iocshArgInt };
+static const iocshArg initArg8 = { "Range", iocshArgInt };
 
 static const iocshArg *const initArgs[] = {
   &initArg0, &initArg1, &initArg2, &initArg3,
-  &initArg4, &initArg5, &initArg6, &initArg7
+  &initArg4, &initArg5, &initArg6, &initArg7, &initArg8
 };
 
-static const iocshFuncDef initFuncDef = { "initPicoAsyn", 2, initArgs };
+static const iocshFuncDef initFuncDef = { "initPicoAsyn", 9, initArgs };
 
 static void
 initCallFunc (const iocshArgBuf * args)
 {
   initPicoAsyn (args[0].sval, args[1].ival, args[2].ival, args[3].ival,
-		args[4].ival, args[5].ival, args[6].ival, args[7].ival);
+		args[4].ival, args[5].ival, args[6].ival, args[7].ival,
+		args[8].ival);
 }
 
 static void epicsShareAPI

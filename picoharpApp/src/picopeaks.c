@@ -89,6 +89,7 @@ pico_peaks (PicoData * self, int peak, double *f, double *s, double *total_count
   int j, k;
   *total_counts = 0;
   double perm[BUCKETS];
+  double current = self->current;
 
   /* average over samples in each bucket */
   for (k = 0; k < BUCKETS; ++k)
@@ -107,10 +108,15 @@ pico_peaks (PicoData * self, int peak, double *f, double *s, double *total_count
     {
       *total_counts = 1;
     }
+    
+  if(current < 0.001)
+    {
+      current = 0.00001;
+    }
 
   for (k = 0; k < BUCKETS; ++k)
     {
-      perm[k] = s[k] / *total_counts * self->current;
+      perm[k] = s[k] / *total_counts * current;
     }
 
   /* circular shift */
@@ -264,6 +270,15 @@ pico_open (PicoData * self)
   char serial[ERRBUF] = { 0 };
   char model[ERRBUF] = { 0 };
   char version[ERRBUF] = { 0 };
+  
+  printf("PicoHarp Configuration:\n");
+  printf("Offset    %d\n", self->Offset);
+  printf("CFDLevel0 %d\n", self->CFDLevel0);
+  printf("CFDLevel1 %d\n", self->CFDLevel1);
+  printf("CFDZeroX0 %d\n", self->CFDZeroX0);
+  printf("CFDZeroX1 %d\n", self->CFDZeroX1);
+  printf("SyncDiv   %d\n", self->SyncDiv);
+  printf("Range     %d\n", self->Range);
 
   PICO_CHECK (PH_GetLibraryVersion (libversion));
   printf ("PH_GetLibraryVersion %s\n", libversion);
@@ -281,9 +296,10 @@ pico_open (PicoData * self)
   PICO_CHECK (PH_SetSyncDiv (DEVICE, self->SyncDiv));
   PICO_CHECK (PH_SetCFDLevel (DEVICE, 0, self->CFDLevel0));
   PICO_CHECK (PH_SetCFDLevel (DEVICE, 1, self->CFDLevel1));
+  PICO_CHECK (PH_SetCFDZeroCross (DEVICE, 0, self->CFDZeroX0));
   PICO_CHECK (PH_SetCFDZeroCross (DEVICE, 1, self->CFDZeroX1));
   PICO_CHECK (Offset0 = PH_SetOffset (DEVICE, self->Offset));
-  PICO_CHECK (PH_SetStopOverflow (DEVICE, 1, HISTCHAN));
+  PICO_CHECK (PH_SetStopOverflow (DEVICE, 1, HISTCHAN-1));
   PICO_CHECK (PH_SetRange (DEVICE, self->Range));
   PICO_CHECK (Resolution = PH_GetResolution (DEVICE));
 
@@ -304,8 +320,18 @@ static PicoData p;
 int
 main ()
 {
+  
+  p.Offset = 0;
+  p.CFDLevel0 = 300;
+  p.CFDLevel1 = 20;
+  p.CFDZeroX0 = 10;
+  p.CFDZeroX1 = 11;
+  p.SyncDiv = 1;
+  p.Range = 3;
+  
   pico_init (&p);
   pico_measure (&p, 5000);
-  printf ("pico_open: %s\n", p.errstr);
+
 }
 #endif
+
