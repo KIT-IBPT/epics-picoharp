@@ -19,7 +19,6 @@ sprintf(self->errstr, "%s", __errstr); \
 if(__status < 0) \
 { \
   printf(#call " %s\n", self->errstr); \
-  PH_CloseDevice(DEVICE); \
   return -1; \
 } \
 }

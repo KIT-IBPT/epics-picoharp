@@ -255,7 +255,11 @@ picoThreadFunc (void *pvt)
 
       post_event (pico->event);
 
-      epicsThreadSleep (1.0);
+      if(pico->alarm)
+        {
+          /* backoff in case of failure */
+          epicsThreadSleep (1.0);
+        }
     }
 }
 
