@@ -14,10 +14,10 @@
 { \
 int __status = call; \
 char __errstr[ERRBUF]; \
-PH_GetErrorString(__errstr, __status); \
-sprintf(self->errstr, "%s", __errstr); \
 if(__status < 0) \
 { \
+  PH_GetErrorString(__errstr, __status); \
+  sprintf(self->errstr, "%s", __errstr); \
   printf(#call " %s\n", self->errstr); \
   return -1; \
 } \
@@ -231,7 +231,7 @@ pico_measure (PicoData * self, int time)
   int Flags = 0;
 
   self->overflow = 0;
-
+  
   PICO_CHECK (PH_ClearHistMem (DEVICE, BLOCK));
   PICO_CHECK (PH_StartMeas (DEVICE, time));
 

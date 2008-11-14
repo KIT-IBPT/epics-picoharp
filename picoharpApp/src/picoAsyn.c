@@ -24,6 +24,9 @@
 #include "asynHelper.h"
 #include "picopeaks.h"
 
+#define PICO_NO_ERROR "OK"
+#define PICO_DCCT_ERROR "ERROR_DCCT"
+
 /*
  * mapping for read / write requests
  * structure, type, member name, alarmed
@@ -191,6 +194,7 @@ picoThreadFunc (void *pvt)
 
   PicoPvt *pico = (PicoPvt *) pvt;
   int time;
+  int first = 1;
 
   epicsMutexMustLock (pico->lock);
   pico_init (&pico->data);
@@ -199,8 +203,6 @@ picoThreadFunc (void *pvt)
 #endif
   printf("pico_init\n");
   epicsMutexUnlock (pico->lock);
-
-  epicsEventSignal (pico->started);
 
   while (1)
     {
@@ -211,6 +213,8 @@ picoThreadFunc (void *pvt)
       time = pico->data.time;
       epicsMutexUnlock (pico->lock);
 
+      /* clear error and measure */
+      snprintf(pico->data.errstr, ERRBUF, "%s", PICO_NO_ERROR);
       pico_measure (&pico->data, time);
 
       /* do the averaging */
@@ -222,11 +226,11 @@ picoThreadFunc (void *pvt)
       /* check DCCT alarm state */
       if(pico->data.dcct_alarm)
         {
-          snprintf(pico->alarm_string, ERRBUF, "%s", "ERROR_DCCT");
+          snprintf(pico->alarm_string, ERRBUF, "%s", PICO_DCCT_ERROR);
         }
 
       /* check for PicoHarp errors */
-      if (strcmp (pico->alarm_string, "ERROR_NONE") == 0)
+      if (strcmp (pico->alarm_string, PICO_NO_ERROR) == 0)
 	{
 	  pico->alarm = 0;
 	}
@@ -251,6 +255,11 @@ picoThreadFunc (void *pvt)
 
       epicsMutexUnlock (pico->lock);
 
+      if(first)
+        {
+          epicsEventSignal (pico->started);
+          first = 0;
+        }
       /* events are trivial, I/O interrupts are tedious */
 
       post_event (pico->event);
