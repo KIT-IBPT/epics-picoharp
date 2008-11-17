@@ -1,0 +1,8 @@
+#!/bin/sh
+
+mkdir -p /usr/local/lib/ph300
+cp phlib.so /usr/local/lib/ph300/
+cp phlib.h  /usr/local/lib/ph300/
+cp phdefin.h  /usr/local/lib/ph300/
+cp errorcodes.h  /usr/local/lib/ph300/
+

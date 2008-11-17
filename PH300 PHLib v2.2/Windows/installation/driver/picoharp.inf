@@ -1,0 +1,92 @@
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+provider=%PicoQuant%
+DriverVer=10/29/2007, 6.0.0.1
+
+CatalogFile=picoharp.cat
+
+[Manufacturer]
+%PicoQuant%=PicoQuantModels
+%PicoQuant%=PicoQuantModels,NTamd64
+
+[PicoQuantModels]
+%USB\VID_0E0D&PID_0003.DeviceDesc%=PQUSB.Dev, USB\VID_0E0D&PID_0003
+
+[PicoQuantModels.NTamd64]
+%USB\VID_0E0D&PID_0003.DeviceDesc%=PQUSB.Dev, USB\VID_0E0D&PID_0003
+
+
+[PreCopySection]
+HKR,,NoSetupUI,,1
+
+[PQUSB.Dev]
+AddReg=PQUSB.AddReg
+CopyFiles=W9xCOPY
+
+[PQUSB.Dev.NT]
+AddReg=PQUSB.AddReg
+CopyFiles=W2KCOPY
+
+[PQUSB.Dev.NTamd64]
+AddReg=PQUSB.AddReg
+CopyFiles=x64COPY
+
+
+[PQUSB.Dev.NT.Services]
+Addservice = PQUSB, 0x00000002, PQUSB.AddService
+
+[PQUSB.Dev.NTamd64.Services]
+Addservice = PQUSB, 0x00000002, PQUSB.AddService.NTamd64
+
+
+[PQUSB.AddService]
+; DisplayName    = %PQUSB.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 2                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\pqusb.sys
+LoadOrderGroup = Base
+
+[PQUSB.AddService.NTamd64]
+; DisplayName    = %PQUSB.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 2                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\pqusb64.sys
+LoadOrderGroup = Base
+
+
+[PQUSB.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,pqusb.sys
+
+[PQUSB.AddReg.NTamd64]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,pqusb64.sys
+
+;--------------------------------------------------------------;
+
+
+[W9XCOPY] ; actually only Windows ME
+pqusb.sys
+
+[W2KCOPY] ; W2K, XP and Vista
+pqusb.sys
+
+[x64COPY] ; XP and Vista x64
+pqusb64.sys
+
+
+[DestinationDirs]
+W9XCOPY=11
+W2KCOPY=12
+x64COPY=12
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+PicoQuant="PicoQuant"
+USB\VID_0E0D&PID_0003.DeviceDesc="PicoQuant PicoHarp 300"
+
