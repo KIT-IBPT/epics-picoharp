@@ -1,5 +1,7 @@
 #!bin/linux-x86/picoharp
 
+epicsEnvSet("EPICS_CA_MAX_ARRAY_BYTES", "1000000")
+
 dbLoadDatabase("dbd/picoharp.dbd")
 picoharp_registerRecordDeviceDriver(pdbbase)
 dbLoadRecords("db/picoharp.db", "DEVICE=SR-DI-PICO-01")
