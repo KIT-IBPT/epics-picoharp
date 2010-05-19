@@ -163,8 +163,8 @@ pico_read_adapter (void *drvPvt, asynUser * pasynUser, epicsFloat64 * value)
 }
 
 static asynStatus
-oct_read_raw (void *drvPvt, asynUser * pasynUser, char *data,
-	      size_t numchars, size_t * nbytesTransferred, int *eomReason)
+oct_read (void *drvPvt, asynUser * pasynUser, char *data,
+          size_t numchars, size_t * nbytesTransferred, int *eomReason)
 {
   PicoPvt *pico = (PicoPvt *) drvPvt;
   epicsMutexLock (pico->lock);
@@ -184,7 +184,7 @@ static asynCommon asynCommonImpl = { common_report, common_connect,
 static asynDrvUser asynDrvUserImpl = { drvuser_create, drvuser_get_type,
   drvuser_destroy
 };
-static asynOctet asynOctetImpl = { NULL, NULL, NULL, oct_read_raw };
+static asynOctet asynOctetImpl = { NULL, oct_read };
 
 /* I/O and calculation thread */
 

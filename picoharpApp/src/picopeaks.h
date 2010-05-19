@@ -60,7 +60,7 @@ typedef struct PICODATA
 
   /* PicoHarp acquisition results */
   int overflow;
-  int countsbuffer[HISTCHAN];
+  unsigned int countsbuffer[HISTCHAN];
   char errstr[ERRBUF];
 
 #ifdef PICO_TEST_MATLAB_HEADER
