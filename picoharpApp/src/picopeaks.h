@@ -34,6 +34,9 @@ typedef struct PICODATA
     double counts_5;
     double counts_60;
     double counts_180;
+    double socs_5;      // Sum of counts squared
+    double socs_60;
+    double socs_180;
 
     double freq; /* master oscillator (Hz)*/
     double current; /* DCCT current (mA) */

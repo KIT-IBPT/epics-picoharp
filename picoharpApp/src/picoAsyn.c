@@ -49,6 +49,9 @@ static struct_info picoStructInfo[] = {
     EXPORT_PICO(counts_5, 1),
     EXPORT_PICO(counts_60, 1),
     EXPORT_PICO(counts_180, 1),
+    EXPORT_PICO(socs_5, 1),
+    EXPORT_PICO(socs_60, 1),
+    EXPORT_PICO(socs_180, 1),
     EXPORT_PICO(freq, 0),
     EXPORT_PICO(dcct_alarm, 0),
     EXPORT_PICO(current, 0),
@@ -159,15 +162,25 @@ static asynStatus oct_read(
     return asynSuccess;
 }
 
-static asynFloat64Array asynFloat64ArrayImpl = { pico_write, pico_read };
-static asynFloat64 asynFloat64Impl = { pico_write_adapter, pico_read_adapter };
+static asynFloat64Array asynFloat64ArrayImpl = {
+    .write = pico_write,
+    .read = pico_read
+};
+static asynFloat64 asynFloat64Impl = {
+    .write = pico_write_adapter,
+    .read = pico_read_adapter
+};
 static asynCommon asynCommonImpl = {
-    common_report, common_connect, common_disconnect
+    .report = common_report,
+    .connect = common_connect,
+    .disconnect = common_disconnect
 };
 static asynDrvUser asynDrvUserImpl = {
-    drvuser_create, drvuser_get_type, drvuser_destroy
+    .create = drvuser_create,
+    .getType = drvuser_get_type,
+    .destroy = drvuser_destroy
 };
-static asynOctet asynOctetImpl = { NULL, oct_read };
+static asynOctet asynOctetImpl = { .read = oct_read };
 
 /* I/O and calculation thread */
 

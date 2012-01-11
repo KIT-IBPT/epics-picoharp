@@ -70,19 +70,18 @@ static int pico_detect_peak(PicoData * self)
 }
 
 static int pico_peaks(
-    PicoData * self, int peak, double *f, double *s, double *total_counts)
+    PicoData * self, int peak, double *f, double *s, double *total_counts,
+    double *sum_of_squares)
 {
-    int j, k;
     *total_counts = 0;
-    double perm[BUCKETS];
-    double current = self->current;
+    *sum_of_squares = 0;
 
     /* average over samples in each bucket */
-    for (k = 0; k < BUCKETS; ++k)
+    for (int k = 0; k < BUCKETS; ++k)
     {
         double sum = 0;
         int bucket_start = round(VALID_SAMPLES * (k * 1.0 / BUCKETS));
-        for (j = 0; j < SAMPLES_PER_BUCKET; ++j)
+        for (int j = 0; j < SAMPLES_PER_BUCKET; ++j)
             sum += f[bucket_start + j + peak];
         s[k] = sum;
         *total_counts += sum;
@@ -91,14 +90,19 @@ static int pico_peaks(
     if (*total_counts <= 0)
         *total_counts = 1;
 
+    double current = self->current;
     if (current < 0.001)
         current = 0.00001;
 
-    for (k = 0; k < BUCKETS; ++k)
+    double perm[BUCKETS];
+    for (int k = 0; k < BUCKETS; ++k)
+    {
         perm[k] = s[k] / *total_counts * current;
+        *sum_of_squares += perm[k] * perm[k];
+    }
 
     /* circular shift */
-    for (k = 0; k < BUCKETS; ++k)
+    for (int k = 0; k < BUCKETS; ++k)
         s[k] = perm[(k + (int) self->shift) % BUCKETS] + LOG_PLOT_OFFSET;
 
     return 0;
@@ -158,18 +162,13 @@ int pico_average(PicoData * self)
             self->samples180[n] += self->buffer180[k][n];
     }
 
-    pico_peaks(self, peak, self->samples, self->buckets, &self->counts_5);
-    pico_peaks(self, peak, self->samples60, self->buckets60, &self->counts_60);
-    pico_peaks(self, peak, self->samples180, self->buckets180,
-        &self->counts_180);
+    pico_peaks(self, peak,
+        self->samples, self->buckets, &self->counts_5, &self->socs_5);
+    pico_peaks(self, peak,
+        self->samples60, self->buckets60, &self->counts_60, &self->socs_60);
+    pico_peaks(self, peak,
+        self->samples180, self->buckets180, &self->counts_180, &self->socs_180);
 
-    /*
-       for (n = 0; n < BUCKETS; ++n)
-       {
-       self->buckets60[n] = self->buckets60[n] + 1;
-       self->buckets180[n] = self->samples[n];
-       }
-       */
     return 0;
 }
 
@@ -182,6 +181,9 @@ void pico_init(PicoData * self)
     self->counts_5 = 1;
     self->counts_60 = 1;
     self->counts_180 = 1;
+    self->socs_5 = 0;
+    self->socs_60 = 0;
+    self->socs_180 = 0;
     self->freq = 499652713;
     self->current = 10;
     self->time = 5000;
