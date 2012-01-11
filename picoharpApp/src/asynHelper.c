@@ -5,9 +5,9 @@
 
 /* drvUser base implementation */
 
-asynStatus
-drvuser_create (void *drvPvt, asynUser * pasynUser,
-                const char *drvInfo, const char **pptypeName, size_t * psize)
+asynStatus drvuser_create(
+    void *drvPvt, asynUser * pasynUser,
+    const char *drvInfo, const char **pptypeName, size_t * psize)
 {
     struct_info *map = (struct_info *) drvPvt;
     if (drvInfo == 0)
@@ -18,63 +18,59 @@ drvuser_create (void *drvPvt, asynUser * pasynUser,
     int n = 0;
     while (1)
     {
-        char *name = map[n].name;
+        const char *name = map[n].name;
         if (name == NULL)
         {
             return (asynError);
         }
-        else if (strcmp (name, drvInfo) == 0)
+        else if (strcmp(name, drvInfo) == 0)
         {
             pasynUser->reason = n;
             if (pptypeName)
-                *pptypeName = epicsStrDup (name);
+                *pptypeName = epicsStrDup(name);
             if (psize)
-                *psize = sizeof (pasynUser->reason);
+                *psize = sizeof(pasynUser->reason);
             return (asynSuccess);
         }
         n++;
     }
 }
 
-asynStatus
-drvuser_get_type (void *drvPvt, asynUser * pasynUser,
-                  const char **pptypeName, size_t * psize)
+asynStatus drvuser_get_type(
+    void *drvPvt, asynUser * pasynUser,
+    const char **pptypeName, size_t * psize)
 {
     struct_info *map = (struct_info *) drvPvt;
     int command = pasynUser->reason;
     *pptypeName = NULL;
     *psize = 0;
     if (pptypeName)
-        *pptypeName = epicsStrDup (map[command].name);
+        *pptypeName = epicsStrDup(map[command].name);
     if (psize)
-        *psize = sizeof (command);
+        *psize = sizeof(command);
     return (asynSuccess);
 }
 
-asynStatus
-drvuser_destroy (void *drvPvt, asynUser * pasynUser)
+asynStatus drvuser_destroy(void *drvPvt, asynUser * pasynUser)
 {
-    return (asynSuccess);
+    return asynSuccess;
 }
 
 /* common */
 
-void
-common_report (void *drvPvt, FILE * fp, int details)
+void common_report(void *drvPvt, FILE * fp, int details)
 {
-    fprintf (fp, "report: %d %s\n", __LINE__, __FILE__);
+    fprintf(fp, "report: %d %s\n", __LINE__, __FILE__);
 }
 
-asynStatus
-common_connect (void *drvPvt, asynUser * pasynUser)
+asynStatus common_connect(void *drvPvt, asynUser * pasynUser)
 {
-    pasynManager->exceptionConnect (pasynUser);
+    pasynManager->exceptionConnect(pasynUser);
     return asynSuccess;
 }
 
-asynStatus
-common_disconnect (void *drvPvt, asynUser * pasynUser)
+asynStatus common_disconnect(void *drvPvt, asynUser * pasynUser)
 {
-    pasynManager->exceptionDisconnect (pasynUser);
+    pasynManager->exceptionDisconnect(pasynUser);
     return asynSuccess;
 }

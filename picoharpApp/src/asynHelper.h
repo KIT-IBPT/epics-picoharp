@@ -19,8 +19,11 @@
     }
 
 #define EXPORT_ARRAY(STRUCT, TYPE, MEMBER, ALARMED) \
-    {offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE), \
-ALARMED}
+    { \
+        offsetof(STRUCT, MEMBER), #MEMBER, \
+        (sizeof((STRUCT *)NULL)->MEMBER) / sizeof(TYPE), \
+        ALARMED \
+    }
 
 #define EXPORT_ARRAY_END {0, 0, 0, 0}
 
@@ -29,26 +32,26 @@ ALARMED}
 typedef struct STRUCTINFO
 {
     int offset;
-    char * name;
-    int elements;
+    const char * name;
+    size_t elements;
     int alarmed;
 } struct_info;
 
 /* common */
 
-void common_report (void *drvPvt, FILE * fp, int details);
-asynStatus common_connect (void *drvPvt, asynUser * pasynUser);
-asynStatus common_disconnect (void *drvPvt, asynUser * pasynUser);
+void common_report(void *drvPvt, FILE * fp, int details);
+asynStatus common_connect(void *drvPvt, asynUser * pasynUser);
+asynStatus common_disconnect(void *drvPvt, asynUser * pasynUser);
 
 /* DrvUser */
 
-asynStatus drvuser_create (void *drvPvt, asynUser * pasynUser,
+asynStatus drvuser_create(void *drvPvt, asynUser * pasynUser,
                            const char *drvInfo,
                            const char **pptypeName, size_t * psize);
 
-asynStatus drvuser_get_type (void *drvPvt, asynUser * pasynUser,
+asynStatus drvuser_get_type(void *drvPvt, asynUser * pasynUser,
                              const char **pptypeName, size_t * psize);
 
-asynStatus drvuser_destroy (void *drvPvt, asynUser * pasynUser);
+asynStatus drvuser_destroy(void *drvPvt, asynUser * pasynUser);
 
 #endif

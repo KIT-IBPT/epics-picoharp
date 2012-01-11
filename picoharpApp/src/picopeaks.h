@@ -78,12 +78,8 @@ typedef struct PICODATA
 } PicoData;
 
 void pico_init(PicoData * self);
-int pico_peaks(PicoData * self, int peak, double * f, double * s,
-               double * counts);
 int pico_average(PicoData * self);
 int pico_open(PicoData * self);
-int pico_measure (PicoData * self, int time);
+int pico_measure(PicoData * self, int time);
 
 #endif
-
-
