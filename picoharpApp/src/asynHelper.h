@@ -5,21 +5,21 @@
 #include <asynDrvUser.h>
 
 #define DECLARE_INTERFACE(self, typ, impl, pvt) \
-  self->typ.interfaceType = asyn ## typ ## Type; \
-  self->typ.pinterface = &impl; \
-  self->typ.drvPvt = pvt;
+    self->typ.interfaceType = asyn ## typ ## Type; \
+    self->typ.pinterface = &impl; \
+    self->typ.drvPvt = pvt;
 
 #define ASYNMUSTSUCCEED(e, m) \
-{ \
- asynStatus status = e; \
- if(status != asynSuccess) { \
-   errlogPrintf(m); \
-   return -1; \
- } \
-}
+    { \
+        asynStatus status = e; \
+        if(status != asynSuccess) { \
+            errlogPrintf(m); \
+            return -1; \
+        } \
+    }
 
 #define EXPORT_ARRAY(STRUCT, TYPE, MEMBER, ALARMED) \
-{offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE), \
+    {offsetof(STRUCT, MEMBER), #MEMBER, (sizeof((STRUCT *)0)->MEMBER) / sizeof(TYPE), \
 ALARMED}
 
 #define EXPORT_ARRAY_END {0, 0, 0, 0}
@@ -28,10 +28,10 @@ ALARMED}
 
 typedef struct STRUCTINFO
 {
-  int offset;
-  char * name;
-  int elements;
-  int alarmed;
+    int offset;
+    char * name;
+    int elements;
+    int alarmed;
 } struct_info;
 
 /* common */
@@ -43,11 +43,11 @@ asynStatus common_disconnect (void *drvPvt, asynUser * pasynUser);
 /* DrvUser */
 
 asynStatus drvuser_create (void *drvPvt, asynUser * pasynUser,
-			   const char *drvInfo,
-			   const char **pptypeName, size_t * psize);
+                           const char *drvInfo,
+                           const char **pptypeName, size_t * psize);
 
 asynStatus drvuser_get_type (void *drvPvt, asynUser * pasynUser,
-			     const char **pptypeName, size_t * psize);
+                             const char **pptypeName, size_t * psize);
 
 asynStatus drvuser_destroy (void *drvPvt, asynUser * pasynUser);
 
