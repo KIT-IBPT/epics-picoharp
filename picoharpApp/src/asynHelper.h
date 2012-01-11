@@ -29,13 +29,13 @@
 
 #define MEMBER_LOOKUP(s, info, n) ((char *) s) + info[n].offset
 
-typedef struct STRUCTINFO
+struct struct_info
 {
     int offset;
     const char * name;
     size_t elements;
     int alarmed;
-} struct_info;
+};
 
 /* common */
 

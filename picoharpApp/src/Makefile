@@ -5,26 +5,17 @@ include $(TOP)/configure/CONFIG
 USR_CFLAGS += -std=gnu99
 
 USR_CFLAGS += -Werror
-USR_CFLAGS += -Wall
-USR_CFLAGS += -Wbad-function-cast
-USR_CFLAGS += -Wmissing-noreturn
-USR_CFLAGS += -Wcast-qual
-USR_CFLAGS += -Wcomment
-USR_CFLAGS += -Wcomments
-USR_CFLAGS += -Wformat
-USR_CFLAGS += -Wimplicit-int
-USR_CFLAGS += -Wimport
-USR_CFLAGS += -Wmissing-braces
-USR_CFLAGS += -Wmissing-declarations
-USR_CFLAGS += -Wmissing-prototypes
-USR_CFLAGS += -Wmultichar
-USR_CFLAGS += -Wnested-externs
-USR_CFLAGS += -Wparentheses
-USR_CFLAGS += -Wpointer-arith
-USR_CFLAGS += -Wsign-compare
-USR_CFLAGS += -Wunknown-pragmas
-USR_CFLAGS += -Wtrigraphs
+USR_CFLAGS += -Wall -Wextra
+USR_CFLAGS += -Wno-unused-parameter
+USR_CFLAGS += -Wno-missing-field-initializers
+USR_CFLAGS += -Wundef
+USR_CFLAGS += -Wshadow
+USR_CFLAGS += -Wcast-align
 USR_CFLAGS += -Wwrite-strings
+USR_CFLAGS += -Wredundant-decls
+USR_CFLAGS += -Wmissing-prototypes
+USR_CFLAGS += -Wmissing-declarations
+USR_CFLAGS += -Wstrict-prototypes
 
 LIBRARY_IOC += pico
 

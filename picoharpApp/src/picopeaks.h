@@ -16,9 +16,8 @@
 #define BUFFERS_180 36
 /*(180/5)*/
 
-typedef struct PICODATA
+struct pico_data
 {
-
     /* EPICS */
     double buckets[BUCKETS];
     double buckets60[BUCKETS];
@@ -77,12 +76,10 @@ typedef struct PICODATA
     double buffer180[BUFFERS_180][HISTCHAN];
 
 #endif
+};
 
-} PicoData;
-
-void pico_init(PicoData * self);
-int pico_average(PicoData * self);
-int pico_open(PicoData * self);
-int pico_measure(PicoData * self, int time);
+void pico_init(struct pico_data *self);
+int pico_average(struct pico_data *self);
+int pico_measure(struct pico_data *self, int time);
 
 #endif

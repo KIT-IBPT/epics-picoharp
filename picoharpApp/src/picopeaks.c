@@ -34,17 +34,15 @@ static double matlab_mod(double x, double y)
 }
 
 /* return index of first peak in picoharp buffer */
-static int pico_detect_peak(PicoData * self)
+static int pico_detect_peak(struct pico_data *self)
 {
-    int i, peak;
-    double pk = self->samples[0];
-    int first_peak_auto = 1;
-
     if (self->pk_auto != 1)
         return self->peak;
 
     /* find first peak */
-    for (i = 1; i < VALID_SAMPLES; ++i)
+    double pk = self->samples[0];
+    int first_peak_auto = 1;
+    for (int i = 1; i < VALID_SAMPLES; ++i)
     {
         if (self->samples[i] > pk)
         {
@@ -54,8 +52,8 @@ static int pico_detect_peak(PicoData * self)
     }
 
     /* peak magic */
-    peak = round(matlab_mod(first_peak_auto, VALID_SAMPLES * 1.0 / BUCKETS));
-
+    int peak =
+        round(matlab_mod(first_peak_auto, VALID_SAMPLES * 1.0 / BUCKETS));
     if (peak < 5)
     {
         if (peak < 1)
@@ -70,8 +68,8 @@ static int pico_detect_peak(PicoData * self)
 }
 
 static int pico_peaks(
-    PicoData * self, int peak, double *f, double *s, double *total_counts,
-    double *sum_of_squares)
+    struct pico_data *self, int peak,
+    double *f, double *s, double *total_counts, double *sum_of_squares)
 {
     *total_counts = 0;
     *sum_of_squares = 0;
@@ -108,23 +106,21 @@ static int pico_peaks(
     return 0;
 }
 
-int pico_average(PicoData * self)
+int pico_average(struct pico_data *self)
 {
-    int n, k;
-    self->counts_fill = 0.0;
-    /* all counts > 0 */
-    double max_bin = 0.0;
-
-    for (n = 0; n < HISTCHAN; ++n)
+    for (int n = 0; n < HISTCHAN; ++n)
     {
         self->samples[n] = self->countsbuffer[n];
         self->fill[n] = self->samples[n] + LOG_PLOT_OFFSET;
     }
 
-    for (n = 0; n < HISTCHAN; ++n)
+    self->counts_fill = 0.0;
+    for (int n = 0; n < HISTCHAN; ++n)
         self->counts_fill += self->samples[n];
 
-    for (n = 0; n < HISTCHAN; ++n)
+    /* all counts > 0 */
+    double max_bin = 0.0;
+    for (int n = 0; n < HISTCHAN; ++n)
     {
         if (self->samples[n] > max_bin)
             max_bin = self->samples[n];
@@ -150,15 +146,15 @@ int pico_average(PicoData * self)
     memset(self->samples60, 0, HISTCHAN * sizeof(double));
     memset(self->samples180, 0, HISTCHAN * sizeof(double));
 
-    for(k = 0; k < BUFFERS_60; ++k)
+    for (int k = 0; k < BUFFERS_60; ++k)
     {
-        for(n = 0; n < HISTCHAN; ++n)
+        for (int n = 0; n < HISTCHAN; ++n)
             self->samples60[n] += self->buffer60[k][n];
     }
 
-    for(k = 0; k < BUFFERS_180; ++k)
+    for (int k = 0; k < BUFFERS_180; ++k)
     {
-        for(n = 0; n < HISTCHAN; ++n)
+        for (int n = 0; n < HISTCHAN; ++n)
             self->samples180[n] += self->buffer180[k][n];
     }
 
@@ -172,29 +168,8 @@ int pico_average(PicoData * self)
     return 0;
 }
 
-void pico_init(PicoData * self)
+int pico_measure(struct pico_data *self, int time)
 {
-    /* initialize defaults */
-    self->pk_auto = 1;
-    self->peak = 45;
-    self->shift = 650;
-    self->counts_5 = 1;
-    self->counts_60 = 1;
-    self->counts_180 = 1;
-    self->socs_5 = 0;
-    self->socs_60 = 0;
-    self->socs_180 = 0;
-    self->freq = 499652713;
-    self->current = 10;
-    self->time = 5000;
-
-    pico_open(self);
-}
-
-int pico_measure(PicoData * self, int time)
-{
-    int Flags = 0;
-
     self->overflow = 0;
 
     PICO_CHECK(PH_ClearHistMem(DEVICE, BLOCK));
@@ -209,19 +184,18 @@ int pico_measure(PicoData * self, int time)
         usleep(0.01);
     }
 
+    int Flags = 0;
     PICO_CHECK(PH_StopMeas(DEVICE));
     PICO_CHECK(PH_GetBlock(DEVICE, self->countsbuffer, BLOCK));
     PICO_CHECK(Flags = PH_GetFlags(DEVICE));
 
     if (Flags & FLAG_OVERFLOW)
-    {
         self->overflow = 1;
-    }
 
     return 0;
 }
 
-int pico_open(PicoData * self)
+static int pico_open(struct pico_data *self)
 {
     int Resolution = 0;
     int Countrate0 = 0;
@@ -276,10 +250,29 @@ int pico_open(PicoData * self)
     return 0;
 }
 
-#ifdef PICO_TEST_MAIN
-static PicoData p;
+void pico_init(struct pico_data *self)
+{
+    /* initialize defaults */
+    self->pk_auto = 1;
+    self->peak = 45;
+    self->shift = 650;
+    self->counts_5 = 1;
+    self->counts_60 = 1;
+    self->counts_180 = 1;
+    self->socs_5 = 0;
+    self->socs_60 = 0;
+    self->socs_180 = 0;
+    self->freq = 499652713;
+    self->current = 10;
+    self->time = 5000;
 
-int main()
+    pico_open(self);
+}
+
+#ifdef PICO_TEST_MAIN
+static struct pico_data p;
+
+int main(void)
 {
     p.Offset = 0;
     p.CFDLevel0 = 300;

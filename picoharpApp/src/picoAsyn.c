@@ -2,6 +2,8 @@
   picoharp device support
 */
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <string.h>
 #include <math.h>
 
@@ -12,7 +14,7 @@
 #include <asynDrvUser.h>
 
 #include <dbScan.h>
-#include <cadef.h>
+#include <epicsThread.h>
 #include <errlog.h>
 #include <iocsh.h>
 #include <epicsExport.h>
@@ -33,8 +35,8 @@
  */
 
 #define EXPORT_PICO(member, alarm) \
-    EXPORT_ARRAY(PicoData, double, member, alarm)
-static struct_info picoStructInfo[] = {
+    EXPORT_ARRAY(struct pico_data, double, member, alarm)
+static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(buckets, 1),
     EXPORT_PICO(buckets60, 1),
     EXPORT_PICO(buckets180, 1),
@@ -58,9 +60,9 @@ static struct_info picoStructInfo[] = {
     EXPORT_ARRAY_END
 };
 
-typedef struct PICOPVT
+struct pico_pvt
 {
-    struct_info *info;
+    struct struct_info *info;
 
     epicsMutexId lock;
     epicsEventId started;
@@ -77,15 +79,15 @@ typedef struct PICOPVT
     asynInterface Float64;
     asynInterface Octet;
 
-    PicoData data;
-} PicoPvt;
+    struct pico_data data;
+};
 
 /* float 64 array */
 
 static asynStatus pico_write(
-    void *drvPvt, asynUser * pasynUser, epicsFloat64 * value, size_t elements)
+    void *drvPvt, asynUser *pasynUser, epicsFloat64 *value, size_t elements)
 {
-    PicoPvt *pico = (PicoPvt *) drvPvt;
+    struct pico_pvt *pico = drvPvt;
 
     int field = pasynUser->reason;
 
@@ -106,10 +108,10 @@ static asynStatus pico_write(
 }
 
 static asynStatus pico_read(
-    void *drvPvt, asynUser * pasynUser, epicsFloat64 * value,
-    size_t elements, size_t * nIn)
+    void *drvPvt, asynUser *pasynUser, epicsFloat64 *value,
+    size_t elements, size_t *nIn)
 {
-    PicoPvt *pico = (PicoPvt *) drvPvt;
+    struct pico_pvt *pico = drvPvt;
     int field = pasynUser->reason;
     int alarm;
 
@@ -137,23 +139,23 @@ static asynStatus pico_read(
 }
 
 static asynStatus pico_write_adapter(
-    void *drvPvt, asynUser * pasynUser, epicsFloat64 value)
+    void *drvPvt, asynUser *pasynUser, epicsFloat64 value)
 {
     return pico_write(drvPvt, pasynUser, &value, 1);
 }
 
 static asynStatus pico_read_adapter(
-    void *drvPvt, asynUser * pasynUser, epicsFloat64 * value)
+    void *drvPvt, asynUser *pasynUser, epicsFloat64 *value)
 {
     size_t nIn;
     return pico_read(drvPvt, pasynUser, value, 1, &nIn);
 }
 
 static asynStatus oct_read(
-    void *drvPvt, asynUser * pasynUser, char *data,
-    size_t numchars, size_t * nbytesTransferred, int *eomReason)
+    void *drvPvt, asynUser *pasynUser, char *data,
+    size_t numchars, size_t *nbytesTransferred, int *eomReason)
 {
-    PicoPvt *pico = drvPvt;
+    struct pico_pvt *pico = drvPvt;
     epicsMutexLock(pico->lock);
     snprintf(data, numchars, "%s", pico->alarm_string);
     *nbytesTransferred = numchars;
@@ -186,9 +188,7 @@ static asynOctet asynOctetImpl = { .read = oct_read };
 
 static __attribute__((noreturn)) void picoThreadFunc(void *pvt)
 {
-    PicoPvt *pico = (PicoPvt *) pvt;
-    int time;
-    int first = 1;
+    struct pico_pvt *pico = pvt;
 
     epicsMutexMustLock(pico->lock);
     pico_init(&pico->data);
@@ -198,16 +198,17 @@ static __attribute__((noreturn)) void picoThreadFunc(void *pvt)
     printf("pico_init\n");
     epicsMutexUnlock(pico->lock);
 
-    while (1)
+    bool first = true;
+    while (true)
     {
         /* acquire the data (usually 5s) */
         epicsMutexMustLock(pico->lock);
-        time = pico->data.time;
+        int pico_time = pico->data.time;
         epicsMutexUnlock(pico->lock);
 
         /* clear error and measure */
         snprintf(pico->data.errstr, ERRBUF, "%s", PICO_NO_ERROR);
-        pico_measure(&pico->data, time);
+        pico_measure(&pico->data, pico_time);
 
         /* do the averaging */
 
@@ -241,10 +242,10 @@ static __attribute__((noreturn)) void picoThreadFunc(void *pvt)
 
         epicsMutexUnlock(pico->lock);
 
-        if(first)
+        if (first)
         {
             epicsEventSignal(pico->started);
-            first = 0;
+            first = false;
         }
         /* events are trivial, I/O interrupts are tedious */
 
@@ -262,11 +263,9 @@ static int initPicoAsyn(
     char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
     int CFDZeroX0, int CFDZeroX1, int SyncDiv, int Range)
 {
-    epicsThreadId thread;
-
     printf("initPicoAsyn('%s')\n", port);
 
-    PicoPvt *pico = callocMustSucceed(1, sizeof(*pico), "PicoAsyn");
+    struct pico_pvt *pico = callocMustSucceed(1, sizeof(*pico), "PicoAsyn");
 
     pico->info = picoStructInfo;
     pico->port = epicsStrDup(port);
@@ -307,8 +306,7 @@ static int initPicoAsyn(
 
     ASYNMUSTSUCCEED(pasynOctetBase->initialize(port, &pico->Octet, 0, 0, 0),
         "PicoAsyn: Can't register Octet.\n");
-    thread =
-        epicsThreadCreate(port, 0, 1024 * 1024, picoThreadFunc,(void *) pico);
+    epicsThreadCreate(port, 0, 1024 * 1024, picoThreadFunc, pico);
 
     epicsEventMustWait(pico->started);
 
