@@ -68,7 +68,7 @@ static int pico_detect_peak(struct pico_data *self)
 }
 
 static int pico_peaks(
-    struct pico_data *self, int peak,
+    struct pico_data *self,
     double *f, double *s, double *total_counts, double *sum_of_squares)
 {
     *total_counts = 0;
@@ -80,7 +80,7 @@ static int pico_peaks(
         double sum = 0;
         int bucket_start = round(VALID_SAMPLES * (k * 1.0 / BUCKETS));
         for (int j = 0; j < SAMPLES_PER_BUCKET; ++j)
-            sum += f[bucket_start + j + peak];
+            sum += f[bucket_start + j + (int) (self->peak)];
         s[k] = sum;
         *total_counts += sum;
     }
@@ -127,10 +127,8 @@ int pico_average(struct pico_data *self)
     }
 
     self->flux = self->counts_fill / self->time * 1000 / self->freq * BUCKETS;
-
     self->max_bin = max_bin;
-
-    int peak = pico_detect_peak(self);
+    self->peak = pico_detect_peak(self);
 
     /* 60 and 180 second averages */
 
@@ -158,11 +156,11 @@ int pico_average(struct pico_data *self)
             self->samples180[n] += self->buffer180[k][n];
     }
 
-    pico_peaks(self, peak,
+    pico_peaks(self,
         self->samples, self->buckets, &self->counts_5, &self->socs_5);
-    pico_peaks(self, peak,
+    pico_peaks(self,
         self->samples60, self->buckets60, &self->counts_60, &self->socs_60);
-    pico_peaks(self, peak,
+    pico_peaks(self,
         self->samples180, self->buckets180, &self->counts_180, &self->socs_180);
 
     return 0;
