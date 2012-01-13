@@ -253,7 +253,7 @@ void pico_init(struct pico_data *self)
     /* initialize defaults */
     self->pk_auto = 1;
     self->peak = 45;
-    self->shift = 650;
+    self->shift = 652;
     self->counts_5 = 1;
     self->counts_60 = 1;
     self->counts_180 = 1;
