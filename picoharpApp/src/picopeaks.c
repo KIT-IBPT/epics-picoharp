@@ -88,14 +88,14 @@ static int pico_peaks(
     if (*total_counts <= 0)
         *total_counts = 1;
 
-    double current = self->current;
-    if (current < 0.001)
-        current = 0.00001;
+    double charge = self->charge;
+    if (charge < 0)
+        charge = 0;
 
     double perm[BUCKETS];
     for (int k = 0; k < BUCKETS; ++k)
     {
-        perm[k] = s[k] / *total_counts * current;
+        perm[k] = s[k] / *total_counts * charge;
         *sum_of_squares += perm[k] * perm[k];
     }
 
@@ -261,7 +261,7 @@ void pico_init(struct pico_data *self)
     self->socs_60 = 0;
     self->socs_180 = 0;
     self->freq = 499652713;
-    self->current = 10;
+    self->charge = 0;
     self->time = 5000;
 
     pico_open(self);

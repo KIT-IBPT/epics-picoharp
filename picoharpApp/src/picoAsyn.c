@@ -56,7 +56,7 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(socs_180, 1),
     EXPORT_PICO(freq, 0),
     EXPORT_PICO(dcct_alarm, 0),
-    EXPORT_PICO(current, 0),
+    EXPORT_PICO(charge, 0),
     EXPORT_ARRAY_END
 };
 

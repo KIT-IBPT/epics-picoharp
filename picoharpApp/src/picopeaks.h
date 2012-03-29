@@ -38,7 +38,7 @@ struct pico_data
     double socs_180;
 
     double freq; /* master oscillator (Hz)*/
-    double current; /* DCCT current (mA) */
+    double charge; /* DCCT charge (nC) */
     double dcct_alarm; /* DCCT monitor alarm status (!) */
 
     /* samples and 60 and 180 second buffers */
