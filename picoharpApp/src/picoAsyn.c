@@ -44,6 +44,7 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(peak, 0),
     EXPORT_PICO(pk_auto, 0),
     EXPORT_PICO(flux, 1),
+    EXPORT_PICO(nflux, 1),
     EXPORT_PICO(time, 0),
     EXPORT_PICO(max_bin, 1),
     EXPORT_PICO(shift, 0),

@@ -69,6 +69,16 @@ record(ai, "$(DEVICE):FLUX") {
   field(EVNT, "$(EVENT)")
 }
 
+record(ai, "$(DEVICE):NFLUX") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))nflux")
+  field(EGU,  "count/turn/nC")
+  field(PREC, "1")
+  field(DESC, "Normalised counts observed per turn")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
 record(ao, "$(DEVICE):TIME") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")

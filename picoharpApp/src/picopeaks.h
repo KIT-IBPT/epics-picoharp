@@ -26,6 +26,7 @@ struct pico_data
     double peak;
     double pk_auto;
     double flux;
+    double nflux;
     double time;
     double max_bin;
     double shift;

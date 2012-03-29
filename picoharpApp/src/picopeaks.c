@@ -130,6 +130,12 @@ int pico_average(struct pico_data *self)
     self->max_bin = max_bin;
     self->peak = pico_detect_peak(self);
 
+    if (self->charge > 0.01)
+        self->nflux = self->flux / self->charge;
+    else
+        self->nflux = 0;
+
+
     /* 60 and 180 second averages */
 
     memcpy(&self->buffer60[self->index60][0], self->samples,
