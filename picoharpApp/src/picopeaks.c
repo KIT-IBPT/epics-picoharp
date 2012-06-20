@@ -170,6 +170,8 @@ static int pico_peaks(
     return 0;
 }
 
+
+/* Analyses captured data, does not communicate with instrument. */
 void pico_average(struct pico_data *self)
 {
     for (int n = 0; n < HISTCHAN; ++n)
@@ -234,6 +236,8 @@ void pico_average(struct pico_data *self)
         self->samples180, self->buckets180, &self->counts_180, &self->socs_180);
 }
 
+
+/* Captures data from instrument, does not process captured data. */
 bool pico_measure(struct pico_data *self, int time)
 {
     self->overflow = 0;
@@ -241,7 +245,7 @@ bool pico_measure(struct pico_data *self, int time)
     PICO_CHECK(PH_ClearHistMem(self->device, BLOCK));
     PICO_CHECK(PH_StartMeas(self->device, time));
 
-    while (1)
+    while (true)
     {
         int done = 0;
         PICO_CHECK(done = PH_CTCStatus(self->device));
@@ -254,6 +258,8 @@ bool pico_measure(struct pico_data *self, int time)
     PICO_CHECK(PH_StopMeas(self->device));
     PICO_CHECK(PH_GetBlock(self->device, self->countsbuffer, BLOCK));
     PICO_CHECK(Flags = PH_GetFlags(self->device));
+    self->count_rate_0 = PH_GetCountRate(self->device, 0);
+    self->count_rate_1 = PH_GetCountRate(self->device, 1);
 
     if (Flags & FLAG_OVERFLOW)
         self->overflow = 1;

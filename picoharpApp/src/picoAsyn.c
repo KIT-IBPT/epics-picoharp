@@ -55,6 +55,8 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(socs_5, 1),
     EXPORT_PICO(socs_60, 1),
     EXPORT_PICO(socs_180, 1),
+    EXPORT_PICO(count_rate_0, 0),
+    EXPORT_PICO(count_rate_1, 0),
     EXPORT_PICO(freq, 0),
     EXPORT_PICO(dcct_alarm, 0),
     EXPORT_PICO(charge, 0),
@@ -228,19 +230,6 @@ static void picoThreadFunc(void *pvt)
             pico->alarm = 0;
         else
             pico->alarm = 1;
-#if 0
-        /* some debugging info */
-        n = 0;
-        while (1)
-        {
-            if (pico->info[n].name == 0)
-                break;
-            double *value =
-                (double *) (((char *) &pico->data) + pico->info[n].offset);
-            printf("%s: %f\n", pico->info[n].name, *value);
-            n++;
-        }
-#endif
         pico_average(&pico->data);
 
         epicsMutexUnlock(pico->lock);

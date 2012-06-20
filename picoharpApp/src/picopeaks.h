@@ -38,6 +38,8 @@ struct pico_data
     double socs_5;      // Sum of counts squared
     double socs_60;
     double socs_180;
+    double count_rate_0;    // Channel count rates
+    double count_rate_1;
 
     double freq; /* master oscillator (Hz)*/
     double charge; /* DCCT charge (nC) */

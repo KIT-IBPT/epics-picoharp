@@ -184,6 +184,26 @@ record(ai, "$(DEVICE):SOCS_5") {
   field(EVNT, "$(EVENT)")
 }
 
+record(ai, "$(DEVICE):COUNT_RATE_0") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))count_rate_0")
+  field(EGU,  "Hz")
+  field(PREC, "0")
+  field(DESC, "Master clock count rate")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):COUNT_RATE_1") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))count_rate_1")
+  field(EGU,  "Hz")
+  field(PREC, "0")
+  field(DESC, "Sample data count rate")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
 record(ao, "$(DEVICE):DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn($(PORT))charge")
