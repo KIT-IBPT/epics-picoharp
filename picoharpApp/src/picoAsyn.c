@@ -322,7 +322,7 @@ static int initPicoAsyn(
 /* IOC shell commands */
 
 static const iocshFuncDef initFuncDef = {
-    "initPicoAsyn", 9, (const iocshArg *[]) {
+    "initPicoAsyn", 10, (const iocshArg *[]) {
         &(iocshArg) { "Port name",  iocshArgString },
         &(iocshArg) { "Serial ID",  iocshArgString },
         &(iocshArg) { "Event",      iocshArgInt },
