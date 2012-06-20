@@ -18,23 +18,25 @@
         } \
     }
 
-#define EXPORT_ARRAY(STRUCT, TYPE, MEMBER, ALARMED) \
+#define EXPORT_ARRAY(STRUCT, TYPE, MEMBER, ALARMED...) \
     { \
-        offsetof(STRUCT, MEMBER), #MEMBER, \
-        (sizeof((STRUCT *)NULL)->MEMBER) / sizeof(TYPE), \
+        .offset = offsetof(STRUCT, MEMBER), \
+        .name = #MEMBER, \
+        .elements = (sizeof((STRUCT *)NULL)->MEMBER) / sizeof(TYPE), \
         ALARMED \
     }
 
 #define EXPORT_ARRAY_END {0, 0, 0, 0}
 
-#define MEMBER_LOOKUP(s, info, n) ((char *) s) + info[n].offset
+#define MEMBER_LOOKUP(s, info) (((char *) (s)) + (info)->offset)
 
 struct struct_info
 {
     int offset;
     const char * name;
     size_t elements;
-    int alarmed;
+    bool alarmed;       // If set an error is raised on alarm
+    bool notify;        // If set the updated flag is set if field written
 };
 
 /* common */

@@ -40,6 +40,7 @@ struct pico_data
     double socs_180;
     double count_rate_0;    // Channel count rates
     double count_rate_1;
+    double resolution;
 
     double freq; /* master oscillator (Hz)*/
     double charge; /* DCCT charge (nC) */
@@ -55,14 +56,15 @@ struct pico_data
     int index180;
 
     /* PicoHarp sampling parameters (st.cmd) */
-    int Offset;
-    int nCFDZeroX0;
-    int CFDLevel0;
-    int CFDZeroX0;
-    int CFDZeroX1;
-    int CFDLevel1;
-    int SyncDiv;
-    int Range;
+    double Offset;
+    double CFDLevel0;
+    double CFDZeroX0;
+    double CFDZeroX1;
+    double CFDLevel1;
+    double SyncDiv;
+    double Range;
+
+    bool parameter_updated;     // Set if parameters should be reloaded
 
     /* PicoHarp acquisition results */
     int overflow;

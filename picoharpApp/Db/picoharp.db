@@ -204,6 +204,16 @@ record(ai, "$(DEVICE):COUNT_RATE_1") {
   field(EVNT, "$(EVENT)")
 }
 
+record(ai, "$(DEVICE):RESOLUTION") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))resolution")
+  field(EGU,  "ps")
+  field(PREC, "0")
+  field(DESC, "Histogram bin width")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
 record(ao, "$(DEVICE):DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn($(PORT))charge")
@@ -236,3 +246,80 @@ record(stringin, "$(DEVICE):ERROR") {
   field(DESC, "Picoharp error string")
 }
 
+
+record(ao, "$(DEVICE):OFFSET") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))Offset")
+  field(EGU,  "ps")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "1000000000")
+  field(DESC, "Offset in picoseconds")
+}
+
+record(ao, "$(DEVICE):CFDZEROX0") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))CFDZeroX0")
+  field(EGU,  "mV")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "20")
+  field(DESC, "Clock zero cross level")
+}
+
+record(ao, "$(DEVICE):CFDZEROX1") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))CFDZeroX1")
+  field(EGU,  "mV")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "20")
+  field(DESC, "Data zero cross level")
+}
+
+record(ao, "$(DEVICE):CFDLEVEL0") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))CFDLevel0")
+  field(EGU,  "mV")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "800")
+  field(DESC, "Clock discriminator level")
+}
+
+record(ao, "$(DEVICE):CFDLEVEL1") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))CFDLevel1")
+  field(EGU,  "mV")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "800")
+  field(DESC, "Data discriminator level")
+}
+
+record(ao, "$(DEVICE):SYNCDIV") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))SyncDiv")
+  field(EGU,  "")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "8")
+  field(DESC, "Input rate divider")
+}
+
+record(ao, "$(DEVICE):RANGE") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))Range")
+  field(EGU,  "")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "7")
+  field(DESC, "Measurement range code")
+}

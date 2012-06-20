@@ -34,32 +34,44 @@
  * structure, type, member name, alarmed
  */
 
-#define EXPORT_PICO(member, alarm) \
-    EXPORT_ARRAY(struct pico_data, double, member, alarm)
+#define EXPORT_PICO(member, extra...) \
+    EXPORT_ARRAY(struct pico_data, double, member, extra)
 static struct struct_info picoStructInfo[] = {
-    EXPORT_PICO(buckets, 1),
-    EXPORT_PICO(buckets60, 1),
-    EXPORT_PICO(buckets180, 1),
-    EXPORT_PICO(fill, 1),
-    EXPORT_PICO(peak, 0),
-    EXPORT_PICO(pk_auto, 0),
-    EXPORT_PICO(flux, 1),
-    EXPORT_PICO(nflux, 1),
-    EXPORT_PICO(time, 0),
-    EXPORT_PICO(max_bin, 1),
-    EXPORT_PICO(shift, 0),
-    EXPORT_PICO(counts_fill, 1),
-    EXPORT_PICO(counts_5, 1),
-    EXPORT_PICO(counts_60, 1),
-    EXPORT_PICO(counts_180, 1),
-    EXPORT_PICO(socs_5, 1),
-    EXPORT_PICO(socs_60, 1),
-    EXPORT_PICO(socs_180, 1),
-    EXPORT_PICO(count_rate_0, 0),
-    EXPORT_PICO(count_rate_1, 0),
-    EXPORT_PICO(freq, 0),
-    EXPORT_PICO(dcct_alarm, 0),
-    EXPORT_PICO(charge, 0),
+    EXPORT_PICO(buckets,    .alarmed = true),
+    EXPORT_PICO(buckets60,  .alarmed = true),
+    EXPORT_PICO(buckets180, .alarmed = true),
+    EXPORT_PICO(fill,       .alarmed = true),
+    EXPORT_PICO(peak),
+    EXPORT_PICO(pk_auto),
+    EXPORT_PICO(flux,       .alarmed = true),
+    EXPORT_PICO(nflux,      .alarmed = true),
+    EXPORT_PICO(time),
+    EXPORT_PICO(max_bin,    .alarmed = true),
+    EXPORT_PICO(shift),
+    EXPORT_PICO(counts_fill, .alarmed = true),
+    EXPORT_PICO(counts_5,   .alarmed = true),
+    EXPORT_PICO(counts_60,  .alarmed = true),
+    EXPORT_PICO(counts_180, .alarmed = true),
+    EXPORT_PICO(socs_5,     .alarmed = true),
+    EXPORT_PICO(socs_60,    .alarmed = true),
+    EXPORT_PICO(socs_180,   .alarmed = true),
+    EXPORT_PICO(count_rate_0),
+    EXPORT_PICO(count_rate_1),
+    EXPORT_PICO(freq),
+    EXPORT_PICO(dcct_alarm),
+    EXPORT_PICO(charge),
+    EXPORT_PICO(resolution),
+
+    /* Controllable parameters.  If any of these are written then all parameters
+     * will be reloaded. */
+    EXPORT_PICO(Offset,     .notify = true),
+    EXPORT_PICO(CFDZeroX0,  .notify = true),
+    EXPORT_PICO(CFDZeroX1,  .notify = true),
+    EXPORT_PICO(CFDLevel0,  .notify = true),
+    EXPORT_PICO(CFDLevel1,  .notify = true),
+    EXPORT_PICO(SyncDiv,    .notify = true),
+    EXPORT_PICO(Range,      .notify = true),
+
     EXPORT_ARRAY_END
 };
 
@@ -92,19 +104,21 @@ static asynStatus pico_write(
     void *drvPvt, asynUser *pasynUser, epicsFloat64 *value, size_t elements)
 {
     struct pico_pvt *pico = drvPvt;
+    struct pico_data *data = &pico->data;
 
     int field = pasynUser->reason;
-
     if (field < 0)
         return asynError;
+    const struct struct_info *info = &pico->info[field];
 
-    if (elements > pico->info[field].elements)
+    if (elements > info->elements)
         return asynError;
 
     epicsMutexMustLock(pico->lock);
 
-    memcpy(MEMBER_LOOKUP(&pico->data, pico->info, field),
-        value, elements * sizeof(epicsFloat64));
+    memcpy(MEMBER_LOOKUP(data, info), value, elements * sizeof(epicsFloat64));
+    if (info->notify)
+        data->parameter_updated = true;
 
     epicsMutexUnlock(pico->lock);
 
@@ -116,30 +130,25 @@ static asynStatus pico_read(
     size_t elements, size_t *nIn)
 {
     struct pico_pvt *pico = drvPvt;
-    int field = pasynUser->reason;
-    int alarm;
+    struct pico_data *data = &pico->data;
 
+    int field = pasynUser->reason;
     if (field < 0)
         return asynError;
+    const struct struct_info *info = &pico->info[field];
 
-    if (elements > pico->info[field].elements)
+    if (elements > info->elements)
         return asynError;
 
     epicsMutexMustLock(pico->lock);
 
-    memcpy(value, MEMBER_LOOKUP(&pico->data, pico->info, field),
-        elements * sizeof(epicsFloat64));
-
+    memcpy(value, MEMBER_LOOKUP(data, info), elements * sizeof(epicsFloat64));
     *nIn = elements;
-
-    alarm = pico->alarm && pico->info[field].alarmed;
+    bool alarm = pico->alarm && info->alarmed;
 
     epicsMutexUnlock(pico->lock);
 
-    if (alarm)
-        return asynError;
-    else
-        return asynSuccess;
+    return alarm ? asynError : asynSuccess;
 }
 
 static asynStatus pico_write_adapter(

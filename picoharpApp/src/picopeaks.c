@@ -237,9 +237,41 @@ void pico_average(struct pico_data *self)
 }
 
 
+static bool pico_set_config(struct pico_data *self)
+{
+    printf("Setting PicoHarp Configuration:\n");
+    printf("Offset    %g\n", self->Offset);
+    printf("CFDLevel0 %g\n", self->CFDLevel0);
+    printf("CFDLevel1 %g\n", self->CFDLevel1);
+    printf("CFDZeroX0 %g\n", self->CFDZeroX0);
+    printf("CFDZeroX1 %g\n", self->CFDZeroX1);
+    printf("SyncDiv   %g\n", self->SyncDiv);
+    printf("Range     %g\n", self->Range);
+
+    PICO_CHECK(PH_SetSyncDiv(self->device, self->SyncDiv));
+    PICO_CHECK(PH_SetCFDLevel(self->device, 0, self->CFDLevel0));
+    PICO_CHECK(PH_SetCFDLevel(self->device, 1, self->CFDLevel1));
+    PICO_CHECK(PH_SetCFDZeroCross(self->device, 0, self->CFDZeroX0));
+    PICO_CHECK(PH_SetCFDZeroCross(self->device, 1, self->CFDZeroX1));
+    PICO_CHECK(PH_SetOffset(self->device, self->Offset));
+    PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
+    PICO_CHECK(PH_SetRange(self->device, self->Range));
+
+    PICO_CHECK(self->resolution = PH_GetResolution(self->device));
+
+    return true;
+}
+
+
 /* Captures data from instrument, does not process captured data. */
 bool pico_measure(struct pico_data *self, int time)
 {
+    if (self->parameter_updated)
+    {
+        self->parameter_updated = false;
+        pico_set_config(self);
+    }
+
     self->overflow = 0;
 
     PICO_CHECK(PH_ClearHistMem(self->device, BLOCK));
@@ -269,49 +301,16 @@ bool pico_measure(struct pico_data *self, int time)
 
 static bool pico_open(struct pico_data *self)
 {
-    int Resolution = 0;
-    int Countrate0 = 0;
-    int Countrate1 = 0;
-    int Offset0 = 0;
-
-    char model[ERRBUF] = { 0 };
-    char version[ERRBUF] = { 0 };
-
-    printf("PicoHarp Configuration:\n");
-    printf("Offset    %d\n", self->Offset);
-    printf("CFDLevel0 %d\n", self->CFDLevel0);
-    printf("CFDLevel1 %d\n", self->CFDLevel1);
-    printf("CFDZeroX0 %d\n", self->CFDZeroX0);
-    printf("CFDZeroX1 %d\n", self->CFDZeroX1);
-    printf("SyncDiv   %d\n", self->SyncDiv);
-    printf("Range     %d\n", self->Range);
-
     PICO_CHECK(PH_Initialize(self->device, MODE_HIST));
 
+    char model[16];
+    char version[8];
     PICO_CHECK(PH_GetHardwareVersion(self->device, model, version));
     printf("PH_GetHardwareVersion %s %s\n", model, version);
 
     PICO_CHECK(PH_Calibrate(self->device));
 
-    PICO_CHECK(PH_SetSyncDiv(self->device, self->SyncDiv));
-    PICO_CHECK(PH_SetCFDLevel(self->device, 0, self->CFDLevel0));
-    PICO_CHECK(PH_SetCFDLevel(self->device, 1, self->CFDLevel1));
-    PICO_CHECK(PH_SetCFDZeroCross(self->device, 0, self->CFDZeroX0));
-    PICO_CHECK(PH_SetCFDZeroCross(self->device, 1, self->CFDZeroX1));
-    PICO_CHECK(Offset0 = PH_SetOffset(self->device, self->Offset));
-    PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
-    PICO_CHECK(PH_SetRange(self->device, self->Range));
-    PICO_CHECK(Resolution = PH_GetResolution(self->device));
-
-    sleep(1);
-
-    Countrate0 = PH_GetCountRate(self->device, 0);
-    Countrate1 = PH_GetCountRate(self->device, 1);
-
-    printf("Resolution=%dps Countrate0=%d/s Countrate1=%d/s\n",
-        Resolution, Countrate0, Countrate1);
-
-    return true;
+    return pico_set_config(self);
 }
 
 bool pico_init(struct pico_data *self, const char *serial)
