@@ -1,4 +1,4 @@
-/* Error codes of PHLib  Ver. 2.2      Nov 2007 */
+/* Error codes of PHLib  Ver. 2.3      April 2009 */
 
 
 #define ERROR_NONE                                                0
