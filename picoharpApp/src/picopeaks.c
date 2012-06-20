@@ -15,15 +15,79 @@
 #define PICO_CHECK(call) \
     { \
         int __status = call; \
-        char __errstr[ERRBUF]; \
         if(__status < 0) \
         { \
+            char __errstr[ERRBUF]; \
             PH_GetErrorString(__errstr, __status); \
             sprintf(self->errstr, "%s", __errstr); \
-            printf(#call " %s\n", self->errstr); \
-            return -1; \
+            printf(#call " %s\n", __errstr); \
+            return false; \
         } \
     }
+
+
+/* Table of available Picoharp devices, initialised at startup. */
+struct pico_device { bool available; char serial[8]; };
+static struct pico_device pico_devices[MAXDEVNUM];
+
+
+/* Builds table of available picoharp devices. */
+void scanPicoDevices(void)
+{
+    printf("scanPicoDevices\n");
+
+    char libversion[8];
+    if (PH_GetLibraryVersion(libversion) == 0)
+        printf("PH_GetLibraryVersion %s\n", libversion);
+    else
+        printf("Unable to interrogate library.\n");
+
+    for (int dev = 0; dev < MAXDEVNUM; dev ++)
+    {
+        pico_devices[dev].available =
+            PH_OpenDevice(dev, pico_devices[dev].serial) == 0;
+        if (pico_devices[dev].available)
+            printf("Found picoharp s/n %s (slot %d)\n",
+                pico_devices[dev].serial, dev);
+    }
+}
+
+
+/* Scans the table of available devices and returns the id of the device with
+ * the matching serial number, or failing that, the first available device if
+ * find_first is set, or -1 to indicate failure. */
+static int find_pico_device(const char *serial)
+{
+    int first = -1;
+    for (int dev = 0; dev < MAXDEVNUM; dev ++)
+    {
+        if (pico_devices[dev].available)
+        {
+            if (strcmp(serial, pico_devices[dev].serial) == 0)
+            {
+                pico_devices[dev].available = false;
+                return dev;
+            }
+            if (first == -1)
+                first = dev;
+        }
+    }
+
+    /* If we drop through to here then we need to resort to returning the first
+     * discovered device if possible. */
+    if (first >= 0)
+    {
+        printf("Requested s/n %s, returning s/n %s instead\n",
+            serial, pico_devices[first].serial);
+        pico_devices[first].available = false;
+        return first;
+    }
+    else
+    {
+        printf("Unable to find any available device\n");
+        return -1;
+    }
+}
 
 
 static double matlab_mod(double x, double y)
@@ -106,7 +170,7 @@ static int pico_peaks(
     return 0;
 }
 
-int pico_average(struct pico_data *self)
+void pico_average(struct pico_data *self)
 {
     for (int n = 0; n < HISTCHAN; ++n)
     {
@@ -168,46 +232,42 @@ int pico_average(struct pico_data *self)
         self->samples60, self->buckets60, &self->counts_60, &self->socs_60);
     pico_peaks(self,
         self->samples180, self->buckets180, &self->counts_180, &self->socs_180);
-
-    return 0;
 }
 
-int pico_measure(struct pico_data *self, int time)
+bool pico_measure(struct pico_data *self, int time)
 {
     self->overflow = 0;
 
-    PICO_CHECK(PH_ClearHistMem(DEVICE, BLOCK));
-    PICO_CHECK(PH_StartMeas(DEVICE, time));
+    PICO_CHECK(PH_ClearHistMem(self->device, BLOCK));
+    PICO_CHECK(PH_StartMeas(self->device, time));
 
     while (1)
     {
         int done = 0;
-        PICO_CHECK(done = PH_CTCStatus(DEVICE));
+        PICO_CHECK(done = PH_CTCStatus(self->device));
         if(done)
             break;
         usleep(0.01);
     }
 
     int Flags = 0;
-    PICO_CHECK(PH_StopMeas(DEVICE));
-    PICO_CHECK(PH_GetBlock(DEVICE, self->countsbuffer, BLOCK));
-    PICO_CHECK(Flags = PH_GetFlags(DEVICE));
+    PICO_CHECK(PH_StopMeas(self->device));
+    PICO_CHECK(PH_GetBlock(self->device, self->countsbuffer, BLOCK));
+    PICO_CHECK(Flags = PH_GetFlags(self->device));
 
     if (Flags & FLAG_OVERFLOW)
         self->overflow = 1;
 
-    return 0;
+    return true;
 }
 
-static int pico_open(struct pico_data *self)
+static bool pico_open(struct pico_data *self)
 {
     int Resolution = 0;
     int Countrate0 = 0;
     int Countrate1 = 0;
     int Offset0 = 0;
 
-    char libversion[ERRBUF] = { 0 };
-    char serial[ERRBUF] = { 0 };
     char model[ERRBUF] = { 0 };
     char version[ERRBUF] = { 0 };
 
@@ -220,41 +280,35 @@ static int pico_open(struct pico_data *self)
     printf("SyncDiv   %d\n", self->SyncDiv);
     printf("Range     %d\n", self->Range);
 
-    PICO_CHECK(PH_GetLibraryVersion(libversion));
-    printf("PH_GetLibraryVersion %s\n", libversion);
+    PICO_CHECK(PH_Initialize(self->device, MODE_HIST));
 
-    PICO_CHECK(PH_OpenDevice(DEVICE, serial));
-    printf("PH_OpenDevice %s\n", serial);
-
-    PICO_CHECK(PH_Initialize(DEVICE, MODE_HIST));
-
-    PICO_CHECK(PH_GetHardwareVersion(DEVICE, model, version));
+    PICO_CHECK(PH_GetHardwareVersion(self->device, model, version));
     printf("PH_GetHardwareVersion %s %s\n", model, version);
 
-    PICO_CHECK(PH_Calibrate(DEVICE));
+    PICO_CHECK(PH_Calibrate(self->device));
 
-    PICO_CHECK(PH_SetSyncDiv(DEVICE, self->SyncDiv));
-    PICO_CHECK(PH_SetCFDLevel(DEVICE, 0, self->CFDLevel0));
-    PICO_CHECK(PH_SetCFDLevel(DEVICE, 1, self->CFDLevel1));
-    PICO_CHECK(PH_SetCFDZeroCross(DEVICE, 0, self->CFDZeroX0));
-    PICO_CHECK(PH_SetCFDZeroCross(DEVICE, 1, self->CFDZeroX1));
-    PICO_CHECK(Offset0 = PH_SetOffset(DEVICE, self->Offset));
-    PICO_CHECK(PH_SetStopOverflow(DEVICE, 1, HISTCHAN-1));
-    PICO_CHECK(PH_SetRange(DEVICE, self->Range));
-    PICO_CHECK(Resolution = PH_GetResolution(DEVICE));
+    PICO_CHECK(PH_SetSyncDiv(self->device, self->SyncDiv));
+    PICO_CHECK(PH_SetCFDLevel(self->device, 0, self->CFDLevel0));
+    PICO_CHECK(PH_SetCFDLevel(self->device, 1, self->CFDLevel1));
+    PICO_CHECK(PH_SetCFDZeroCross(self->device, 0, self->CFDZeroX0));
+    PICO_CHECK(PH_SetCFDZeroCross(self->device, 1, self->CFDZeroX1));
+    PICO_CHECK(Offset0 = PH_SetOffset(self->device, self->Offset));
+    PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
+    PICO_CHECK(PH_SetRange(self->device, self->Range));
+    PICO_CHECK(Resolution = PH_GetResolution(self->device));
 
     sleep(1);
 
-    Countrate0 = PH_GetCountRate(DEVICE, 0);
-    Countrate1 = PH_GetCountRate(DEVICE, 1);
+    Countrate0 = PH_GetCountRate(self->device, 0);
+    Countrate1 = PH_GetCountRate(self->device, 1);
 
     printf("Resolution=%dps Countrate0=%d/s Countrate1=%d/s\n",
         Resolution, Countrate0, Countrate1);
 
-    return 0;
+    return true;
 }
 
-void pico_init(struct pico_data *self)
+bool pico_init(struct pico_data *self, const char *serial)
 {
     /* initialize defaults */
     self->pk_auto = 1;
@@ -269,15 +323,20 @@ void pico_init(struct pico_data *self)
     self->freq = 499652713;
     self->charge = 0;
     self->time = 5000;
+    self->device = find_pico_device(serial);
+    if (self->device < 0)
+        return false;
 
-    pico_open(self);
+    return pico_open(self);
 }
+
 
 #ifdef PICO_TEST_MAIN
 static struct pico_data p;
 
 int main(void)
 {
+    scanPicoDevices();
     p.Offset = 0;
     p.CFDLevel0 = 300;
     p.CFDLevel1 = 20;

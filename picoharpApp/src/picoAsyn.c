@@ -69,6 +69,7 @@ struct pico_pvt
     epicsEventId started;
 
     char *port;
+    char *serial;
     int event;
     int alarm;
 
@@ -187,20 +188,21 @@ static asynOctet asynOctetImpl = { .read = oct_read };
 
 /* I/O and calculation thread */
 
-static __attribute__((noreturn)) void picoThreadFunc(void *pvt)
+static void picoThreadFunc(void *pvt)
 {
     struct pico_pvt *pico = pvt;
+    bool ok = true;
 
+    printf("pico_init\n");
     epicsMutexMustLock(pico->lock);
-    pico_init(&pico->data);
+    ok = pico_init(&pico->data, pico->serial);
 #if 1
     epicsThreadSleep(1.0);
 #endif
-    printf("pico_init\n");
     epicsMutexUnlock(pico->lock);
 
     bool first = true;
-    while (true)
+    while (ok)
     {
         /* acquire the data (usually 5s) */
         epicsMutexMustLock(pico->lock);
@@ -256,12 +258,15 @@ static __attribute__((noreturn)) void picoThreadFunc(void *pvt)
             /* backoff in case of failure */
             epicsThreadSleep(1.0);
     }
+
+    printf("Picoharp thread terminating\n");
 }
 
 /* port creation */
 
 static int initPicoAsyn(
-    char *port, int event, int Offset, int CFDLevel0, int CFDLevel1,
+    const char *port, const char *serial,
+    int event, int Offset, int CFDLevel0, int CFDLevel1,
     int CFDZeroX0, int CFDZeroX1, int SyncDiv, int Range)
 {
     printf("initPicoAsyn('%s')\n", port);
@@ -270,6 +275,7 @@ static int initPicoAsyn(
 
     pico->info = picoStructInfo;
     pico->port = epicsStrDup(port);
+    pico->serial = epicsStrDup(serial);
     pico->lock = epicsMutexMustCreate();
     pico->started = epicsEventMustCreate(epicsEventEmpty);
     pico->event = event;
@@ -315,11 +321,12 @@ static int initPicoAsyn(
 }
 
 
-/* IOC shell command */
+/* IOC shell commands */
 
 static const iocshFuncDef initFuncDef = {
     "initPicoAsyn", 9, (const iocshArg *[]) {
         &(iocshArg) { "Port name",  iocshArgString },
+        &(iocshArg) { "Serial ID",  iocshArgString },
         &(iocshArg) { "Event",      iocshArgInt },
         &(iocshArg) { "Offset",     iocshArgInt },
         &(iocshArg) { "CFDLevel0",  iocshArgInt },
@@ -331,17 +338,26 @@ static const iocshFuncDef initFuncDef = {
     }
 };
 
+static const iocshFuncDef scanFuncDef = {
+    "scanPicoDevices", 0, NULL };
+
 static void initCallFunc(const iocshArgBuf * args)
 {
     initPicoAsyn(
-        args[0].sval, args[1].ival, args[2].ival, args[3].ival,
+        args[0].sval, args[1].sval, args[2].ival, args[3].ival,
         args[4].ival, args[5].ival, args[6].ival, args[7].ival,
-        args[8].ival);
+        args[8].ival, args[9].ival);
+}
+
+static void scanCallFunc(const iocshArgBuf *args)
+{
+    scanPicoDevices();
 }
 
 static void epicsShareAPI PicoAsynRegistrar(void)
 {
     iocshRegister(&initFuncDef, initCallFunc);
+    iocshRegister(&scanFuncDef, scanCallFunc);
 }
 
 epicsExportRegistrar(PicoAsynRegistrar);

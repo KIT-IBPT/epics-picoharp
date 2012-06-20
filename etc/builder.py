@@ -10,10 +10,12 @@ class Picoharp(Device):
     DbdFileList = ['picoharp']
 
     def __init__(self,
-            port, event, offset, CFDlevel0, CFDlevel1, CFDzeroX0, CFDzeroX1,
+            port, serial, event, offset,
+            CFDlevel0, CFDlevel1, CFDzeroX0, CFDzeroX1,
             syncdiv, range):
         self.__super.__init__()
         self.port       = port
+        self.serial     = serial
         self.event      = event
         self.offset     = offset
         self.CFDlevel0  = CFDlevel0
@@ -23,8 +25,11 @@ class Picoharp(Device):
         self.syncdiv    = syncdiv
         self.range      = range
 
+    def InitialiseOnce(self):
+        print 'scanPicoDevices'
+
     def Initialise(self):
-        print 'initPicoAsyn("%(port)s", %(event)d, %(offset)d, ' \
+        print 'initPicoAsyn("%(port)s", "%(serial)s", %(event)d, %(offset)d, ' \
             '%(CFDlevel0)d, %(CFDlevel1)d, %(CFDzeroX0)d, %(CFDzeroX1)d, ' \
             '%(syncdiv)d, %(range)d)' % self.__dict__
 

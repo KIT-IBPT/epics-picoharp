@@ -3,7 +3,6 @@
 
 #include <phdefin.h>
 
-#define DEVICE 0
 #define BLOCK 0
 
 #define ERRBUF 1024
@@ -18,6 +17,8 @@
 
 struct pico_data
 {
+    int device;     /* Device ID used when talking to picoharp. */
+
     /* EPICS */
     double buckets[BUCKETS];
     double buckets60[BUCKETS];
@@ -79,8 +80,9 @@ struct pico_data
 #endif
 };
 
-void pico_init(struct pico_data *self);
-int pico_average(struct pico_data *self);
-int pico_measure(struct pico_data *self, int time);
+bool pico_init(struct pico_data *self, const char *serial);
+void pico_average(struct pico_data *self);
+bool pico_measure(struct pico_data *self, int time);
+void scanPicoDevices(void);
 
 #endif
