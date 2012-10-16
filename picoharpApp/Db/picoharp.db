@@ -162,6 +162,10 @@ record(ai, "$(DEVICE):SOCS_60") {
   field(DESC, "Total counts squared")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
+  field(HSV,  "MINOR")
+  field(HIGH, "490")
+  field(HHSV, "MAJOR")
+  field(HIHI, "500")
 }
 
 record(ai, "$(DEVICE):SOCS_180") {
@@ -172,6 +176,10 @@ record(ai, "$(DEVICE):SOCS_180") {
   field(DESC, "Total counts squared")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
+  field(HSV,  "MINOR")
+  field(HIGH, "490")
+  field(HHSV, "MAJOR")
+  field(HIHI, "500")
 }
 
 record(ai, "$(DEVICE):SOCS_5") {
@@ -182,6 +190,10 @@ record(ai, "$(DEVICE):SOCS_5") {
   field(DESC, "Total counts squared")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
+  field(HSV,  "MINOR")
+  field(HIGH, "490")
+  field(HHSV, "MAJOR")
+  field(HIHI, "500")
 }
 
 record(ai, "$(DEVICE):COUNT_RATE_0") {
