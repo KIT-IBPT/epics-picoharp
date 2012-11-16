@@ -175,10 +175,7 @@ static int pico_peaks(
 void pico_average(struct pico_data *self)
 {
     for (int n = 0; n < HISTCHAN; ++n)
-    {
         self->samples[n] = self->countsbuffer[n];
-        self->fill[n] = self->samples[n] + LOG_PLOT_OFFSET;
-    }
 
     self->counts_fill = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)

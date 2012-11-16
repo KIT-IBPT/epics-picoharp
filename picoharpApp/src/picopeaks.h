@@ -23,7 +23,9 @@ struct pico_data
     double buckets[BUCKETS];
     double buckets60[BUCKETS];
     double buckets180[BUCKETS];
-    double fill[HISTCHAN];
+    double samples[HISTCHAN];       // Samples and 60, 180 second buffers
+    double samples60[HISTCHAN];
+    double samples180[HISTCHAN];
     double peak;
     double pk_auto;
     double flux;
@@ -46,11 +48,6 @@ struct pico_data
     double charge; /* DCCT charge (nC) */
     double dcct_alarm; /* DCCT monitor alarm status (!) */
 
-    /* samples and 60 and 180 second buffers */
-
-    double samples[HISTCHAN];
-    double samples60[HISTCHAN];
-    double samples180[HISTCHAN];
 
     int index60;
     int index180;

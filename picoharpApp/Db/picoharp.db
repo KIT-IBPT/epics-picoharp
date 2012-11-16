@@ -1,6 +1,26 @@
 record(waveform, "$(DEVICE):FILL") {
   field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))fill")
+  field(INP,  "@asyn($(PORT))samples")
+  field(FTVL, "DOUBLE")
+  field(NELM, "65536")
+  field(DESC, "Raw picoharp signal")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):FILL_60") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))samples60")
+  field(FTVL, "DOUBLE")
+  field(NELM, "65536")
+  field(DESC, "Raw picoharp signal")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):FILL_180") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))samples180")
   field(FTVL, "DOUBLE")
   field(NELM, "65536")
   field(DESC, "Raw picoharp signal")
