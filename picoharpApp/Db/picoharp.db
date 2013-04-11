@@ -68,26 +68,24 @@ record(waveform, "$(DEVICE):PROFILE") {
   field(EVNT, "$(EVENT)")
 }
 
-record(ao, "$(DEVICE):PEAK") {
-  field(PINI, "YES")
+record(ai, "$(DEVICE):PEAK") {
   field(DTYP, "asynFloat64")
-  field(OUT,  "@asyn($(PORT))peak")
+  field(INP,  "@asyn($(PORT))peak")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
   field(EGU,  "bins")
   field(PREC, "0")
   field(LOPR, "1")
   field(HOPR, "63")
+  field(LOLO, "6")
+  field(LOW,  "12")
+  field(HIGH, "50")
+  field(HIHI, "57")
+  field(LLSV, "MAJOR")
+  field(LSV,  "MINOR")
+  field(HSV,  "MINOR")
+  field(HHSV, "MAJOR")
   field(DESC, "Offset of first peak")
-}
-
-record(ao, "$(DEVICE):PK_AUTO") {
-  field(PINI, "YES")
-  field(DTYP, "asynFloat64")
-  field(OUT,  "@asyn($(PORT))pk_auto")
-  field(EGU,  "bins")
-  field(PREC, "0")
-  field(LOPR, "0")
-  field(HOPR, "1")
-  field(DESC, "set auto-adjust peak")
 }
 
 record(ai, "$(DEVICE):FLUX") {
@@ -143,6 +141,17 @@ record(ao, "$(DEVICE):SHIFT") {
   field(LOPR, "0")
   field(HOPR, "935")
   field(DESC, "Circular Shift")
+}
+
+record(ao, "$(DEVICE):SAMPLE_WIDTH") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))sample_width")
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "62")
+  field(DESC, "Sample width")
 }
 
 record(ai, "$(DEVICE):COUNTS_FILL") {

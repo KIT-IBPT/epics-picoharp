@@ -9,7 +9,6 @@
 #define BUCKETS 936
 #define LOG_PLOT_OFFSET 1e-8
 #define VALID_SAMPLES 58540
-#define SAMPLES_PER_BUCKET 10
 #define SAMPLES_PER_PROFILE 62  /* floor(VALID_SAMPLES/BUCKETS) */
 #define BUFFERS_60 12
 /*(60/5)*/
@@ -29,12 +28,12 @@ struct pico_data
     double samples180[HISTCHAN];
     double profile[SAMPLES_PER_PROFILE];
     double peak;
-    double pk_auto;
     double flux;
     double nflux;
     double time;
     double max_bin;
     double shift;
+    double sample_width;
     double counts_fill;
     double counts_5;
     double counts_60;

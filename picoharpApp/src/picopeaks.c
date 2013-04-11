@@ -95,65 +95,55 @@ static int find_pico_device(const char *serial)
 }
 
 
-static double matlab_mod(double x, double y)
-{
-    /* matlab real modulo */
-    double n = floor(x / y);
-    return x - n * y;
-}
-
 /* return index of first peak in picoharp buffer */
 static int pico_detect_peak(struct pico_data *self)
 {
-    if (self->pk_auto != 1)
-        return self->peak;
-
-    /* find first peak */
-    double pk = self->samples[0];
-    int first_peak_auto = 1;
-    for (int i = 1; i < VALID_SAMPLES; ++i)
+    double max = 0;
+    int peak = 0;
+    for (int i = 0; i < SAMPLES_PER_PROFILE; i ++)
     {
-        if (self->samples[i] > pk)
+        if (self->profile[i] > max)
         {
-            pk = self->samples[i];
-            first_peak_auto = i + 1;
+            max = self->profile[i];
+            peak = i;
         }
     }
-
-    /* peak magic */
-    int peak =
-        round(matlab_mod(first_peak_auto, VALID_SAMPLES * 1.0 / BUCKETS));
-    if (peak < 5)
-    {
-        if (peak < 1)
-            peak = 1;
-    }
-    else if (peak > 5 && peak < 58)
-        peak = peak - 5;
-    else
-        peak = 53;
-
     return peak;
 }
 
-static int pico_peaks(
+
+/* Accumulates raw samples into bins and returns total sum. */
+static double sum_peaks(struct pico_data *self, double *samples, double *bins)
+{
+    /* Compute accumulation window from programmed sample width and discovered
+     * peak, but ensure window fits entirely within a single bin. */
+    int start_offset = (int) self->peak - (int) self->sample_width / 2;
+    int end_offset = start_offset + (int) self->sample_width;
+    if (start_offset < 0)
+        start_offset = 0;
+    if (end_offset > SAMPLES_PER_PROFILE)
+        end_offset = SAMPLES_PER_PROFILE;
+
+    double total = 0;
+    for (int k = 0; k < BUCKETS; ++k)
+    {
+        int start = bucket_start[k] + start_offset;
+        int end = bucket_start[k] + end_offset;
+        double sum = 0;
+        for (int j = start; j < end; j ++)
+            sum += samples[j];
+        bins[k] = sum;
+        total += sum;
+    }
+    return total;
+}
+
+
+static void pico_peaks(
     struct pico_data *self,
     double *f, double *s, double *total_counts, double *sum_of_squares)
 {
-    *total_counts = 0;
-    *sum_of_squares = 0;
-
-    /* average over samples in each bucket */
-    for (int k = 0; k < BUCKETS; ++k)
-    {
-        double sum = 0;
-        int start = bucket_start[k];
-        for (int j = 0; j < SAMPLES_PER_BUCKET; ++j)
-            sum += f[start + j + (int) (self->peak)];
-        s[k] = sum;
-        *total_counts += sum;
-    }
-
+    *total_counts = sum_peaks(self, f, s);
     if (*total_counts <= 0)
         *total_counts = 1;
 
@@ -162,6 +152,7 @@ static int pico_peaks(
         charge = 0;
 
     double perm[BUCKETS];
+    *sum_of_squares = 0;
     for (int k = 0; k < BUCKETS; ++k)
     {
         perm[k] = s[k] / *total_counts * charge;
@@ -171,8 +162,6 @@ static int pico_peaks(
     /* circular shift */
     for (int k = 0; k < BUCKETS; ++k)
         s[k] = perm[(k + (int) self->shift) % BUCKETS] + LOG_PLOT_OFFSET;
-
-    return 0;
 }
 
 
@@ -332,8 +321,8 @@ bool pico_init(struct pico_data *self, const char *serial)
         bucket_start[i] = (int) round((float) i * VALID_SAMPLES / BUCKETS);
 
     /* initialize defaults */
-    self->pk_auto = 1;
     self->peak = 45;
+    self->sample_width = 10;
     self->shift = 652;
     self->counts_5 = 1;
     self->counts_60 = 1;
