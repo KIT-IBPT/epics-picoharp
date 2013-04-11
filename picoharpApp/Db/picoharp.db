@@ -108,6 +108,7 @@ record(ai, "$(DEVICE):NFLUX") {
   field(EVNT, "$(EVENT)")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):TIME") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -132,6 +133,7 @@ record(ai, "$(DEVICE):MAX_BIN") {
   field(EVNT, "$(EVENT)")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):SHIFT") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -143,6 +145,7 @@ record(ao, "$(DEVICE):SHIFT") {
   field(DESC, "Circular Shift")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):SAMPLE_WIDTH") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -299,6 +302,7 @@ record(stringin, "$(DEVICE):ERROR") {
 }
 
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):OFFSET") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -310,6 +314,7 @@ record(ao, "$(DEVICE):OFFSET") {
   field(DESC, "Offset in picoseconds")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):CFDZEROX0") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -321,6 +326,7 @@ record(ao, "$(DEVICE):CFDZEROX0") {
   field(DESC, "Clock zero cross level")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):CFDZEROX1") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -332,6 +338,7 @@ record(ao, "$(DEVICE):CFDZEROX1") {
   field(DESC, "Data zero cross level")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):CFDLEVEL0") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -343,6 +350,7 @@ record(ao, "$(DEVICE):CFDLEVEL0") {
   field(DESC, "Clock discriminator level")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):CFDLEVEL1") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -354,6 +362,7 @@ record(ao, "$(DEVICE):CFDLEVEL1") {
   field(DESC, "Data discriminator level")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):SYNCDIV") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
@@ -365,6 +374,7 @@ record(ao, "$(DEVICE):SYNCDIV") {
   field(DESC, "Input rate divider")
 }
 
+#% autosave 2 VAL
 record(ao, "$(DEVICE):RANGE") {
   field(PINI, "YES")
   field(DTYP, "asynFloat64")
