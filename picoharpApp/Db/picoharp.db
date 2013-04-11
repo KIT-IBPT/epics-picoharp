@@ -37,6 +37,7 @@ record(waveform, "$(DEVICE):BUCKETS") {
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
 }
+
 record(waveform, "$(DEVICE):BUCKETS_60") {
   field(DTYP, "asynFloat64ArrayIn")
   field(INP,  "@asyn($(PORT))buckets60")
@@ -53,6 +54,16 @@ record(waveform, "$(DEVICE):BUCKETS_180") {
   field(FTVL, "DOUBLE")
   field(NELM, "936")
   field(DESC, "Fill pattern 180s")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):PROFILE") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))profile")
+  field(FTVL, "DOUBLE")
+  field(NELM, "62")
+  field(DESC, "Bucket profile")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
 }

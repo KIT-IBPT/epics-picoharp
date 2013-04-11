@@ -43,6 +43,7 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(samples,    .alarmed = true),
     EXPORT_PICO(samples60,  .alarmed = true),
     EXPORT_PICO(samples180, .alarmed = true),
+    EXPORT_PICO(profile,    .alarmed = true),
     EXPORT_PICO(peak),
     EXPORT_PICO(pk_auto),
     EXPORT_PICO(flux,       .alarmed = true),

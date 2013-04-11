@@ -10,6 +10,11 @@
 
 #include "picopeaks.h"
 
+
+/* Variable recording the start of each bucket in the raw sample profile. */
+static int bucket_start[BUCKETS];
+
+
 /* TODO return from function on error */
 
 #define PICO_CHECK(call) \
@@ -142,9 +147,9 @@ static int pico_peaks(
     for (int k = 0; k < BUCKETS; ++k)
     {
         double sum = 0;
-        int bucket_start = round(VALID_SAMPLES * (k * 1.0 / BUCKETS));
+        int start = bucket_start[k];
         for (int j = 0; j < SAMPLES_PER_BUCKET; ++j)
-            sum += f[bucket_start + j + (int) (self->peak)];
+            sum += f[start + j + (int) (self->peak)];
         s[k] = sum;
         *total_counts += sum;
     }
@@ -174,8 +179,17 @@ static int pico_peaks(
 /* Analyses captured data, does not communicate with instrument. */
 void pico_average(struct pico_data *self)
 {
+    /* Capture the raw counts. */
     for (int n = 0; n < HISTCHAN; ++n)
         self->samples[n] = self->countsbuffer[n];
+    /* Compute the bucket profile by summing samples over all buckets. */
+    memset(self->profile, 0, sizeof(self->profile));
+    for (int n = 0; n < BUCKETS; n++)
+    {
+        int ix = bucket_start[n];
+        for (int s = 0; s < SAMPLES_PER_PROFILE; s++)
+            self->profile[s] += self->samples[ix + s];
+    }
 
     self->counts_fill = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)
@@ -312,6 +326,11 @@ static bool pico_open(struct pico_data *self)
 
 bool pico_init(struct pico_data *self, const char *serial)
 {
+    /* Initialise the bucket boundaries.  Doesn't matter if we do this more than
+     * once, the result is the same. */
+    for (int i = 0; i < BUCKETS; i ++)
+        bucket_start[i] = (int) round((float) i * VALID_SAMPLES / BUCKETS);
+
     /* initialize defaults */
     self->pk_auto = 1;
     self->peak = 45;
