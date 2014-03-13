@@ -2,10 +2,10 @@
 # Run "gnumake clean uninstall install" in the application
 # top directory each time this file is changed.
 
-SUPPORT = /dls_sw/prod/R3.14.11/support
+SUPPORT = /dls_sw/prod/R3.14.12.3/support
 
-EPICS_BASE = /dls_sw/epics/R3.14.11/base
+EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
-ASYN = $(SUPPORT)/asyn/4-17
+ASYN = $(SUPPORT)/asyn/4-22
 
 -include $(TOP)/configure/RELEASE.private

@@ -249,15 +249,15 @@ static bool pico_set_config(struct pico_data *self)
     printf("Range     %g\n", self->Range);
 
     PICO_CHECK(PH_SetSyncDiv(self->device, self->SyncDiv));
-    PICO_CHECK(PH_SetCFDLevel(self->device, 0, self->CFDLevel0));
-    PICO_CHECK(PH_SetCFDLevel(self->device, 1, self->CFDLevel1));
-    PICO_CHECK(PH_SetCFDZeroCross(self->device, 0, self->CFDZeroX0));
-    PICO_CHECK(PH_SetCFDZeroCross(self->device, 1, self->CFDZeroX1));
+    PICO_CHECK(PH_SetInputCFD(
+        self->device, 0, self->CFDLevel0, self->CFDZeroX0));
+    PICO_CHECK(PH_SetInputCFD(
+        self->device, 1, self->CFDLevel1, self->CFDZeroX1));
     PICO_CHECK(PH_SetOffset(self->device, self->Offset));
     PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
-    PICO_CHECK(PH_SetRange(self->device, self->Range));
+    PICO_CHECK(PH_SetBinning(self->device, self->Range));
 
-    PICO_CHECK(self->resolution = PH_GetResolution(self->device));
+    PICO_CHECK(PH_GetResolution(self->device, &self->resolution));
 
     return true;
 }
@@ -280,7 +280,7 @@ bool pico_measure(struct pico_data *self, int time)
     while (true)
     {
         int done = 0;
-        PICO_CHECK(done = PH_CTCStatus(self->device));
+        PICO_CHECK(PH_CTCStatus(self->device, &done));
         if(done)
             break;
         usleep(0.01);
@@ -288,10 +288,14 @@ bool pico_measure(struct pico_data *self, int time)
 
     int Flags = 0;
     PICO_CHECK(PH_StopMeas(self->device));
-    PICO_CHECK(PH_GetBlock(self->device, self->countsbuffer, BLOCK));
-    PICO_CHECK(Flags = PH_GetFlags(self->device));
-    self->count_rate_0 = PH_GetCountRate(self->device, 0);
-    self->count_rate_1 = PH_GetCountRate(self->device, 1);
+    PICO_CHECK(PH_GetHistogram(self->device, self->countsbuffer, BLOCK));
+    PICO_CHECK(PH_GetFlags(self->device, &Flags));
+
+    int count_rate_0, count_rate_1;
+    PICO_CHECK(PH_GetCountRate(self->device, 0, &count_rate_0));
+    PICO_CHECK(PH_GetCountRate(self->device, 1, &count_rate_1));
+    self->count_rate_0 = count_rate_0;
+    self->count_rate_1 = count_rate_1;
 
     if (Flags & FLAG_OVERFLOW)
         self->overflow = 1;
@@ -304,9 +308,10 @@ static bool pico_open(struct pico_data *self)
     PICO_CHECK(PH_Initialize(self->device, MODE_HIST));
 
     char model[16];
+    char partnum[8];
     char version[8];
-    PICO_CHECK(PH_GetHardwareVersion(self->device, model, version));
-    printf("PH_GetHardwareVersion %s %s\n", model, version);
+    PICO_CHECK(PH_GetHardwareInfo(self->device, model, partnum, version));
+    printf("PH_GetHardwareInfo %s %s %s\n", model, partnum, version);
 
     PICO_CHECK(PH_Calibrate(self->device));
 
