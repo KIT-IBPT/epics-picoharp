@@ -1,0 +1,40 @@
+# Template of period specific picoharp data
+#
+#% macro, DEVICE, Device name
+#% macro, PORT, Asyn port
+#% macro, SUFFIX, Suffix for name
+#% macro, EVENT, Event number used for update signalling
+
+record(waveform, "$(DEVICE):FILL_$(SUFFIX)") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))samples_$(SUFFIX)")
+  field(FTVL, "DOUBLE")
+  field(NELM, "65536")
+  field(DESC, "Raw picoharp signal")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):BUCKETS_$(SUFFIX)") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))buckets_$(SUFFIX)")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):SOCS_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))socs_$(SUFFIX)")
+  field(EGU,  "nC^2")
+  field(PREC, "0")
+  field(DESC, "Total counts squared")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+  field(HSV,  "MINOR")
+  field(HIGH, "490")
+  field(HHSV, "MAJOR")
+  field(HIHI, "500")
+}

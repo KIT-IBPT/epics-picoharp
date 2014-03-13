@@ -1,62 +1,6 @@
-record(waveform, "$(DEVICE):FILL") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))samples")
-  field(FTVL, "DOUBLE")
-  field(NELM, "65536")
-  field(DESC, "Raw picoharp signal")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
+alias("$(DEVICE):FILL_5", "$(DEVICE):FILL")
+alias("$(DEVICE):BUCKETS_5", "$(DEVICE):BUCKETS")
 
-record(waveform, "$(DEVICE):FILL_60") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))samples60")
-  field(FTVL, "DOUBLE")
-  field(NELM, "65536")
-  field(DESC, "Raw picoharp signal")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(waveform, "$(DEVICE):FILL_180") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))samples180")
-  field(FTVL, "DOUBLE")
-  field(NELM, "65536")
-  field(DESC, "Raw picoharp signal")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(waveform, "$(DEVICE):BUCKETS") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))buckets")
-  field(FTVL, "DOUBLE")
-  field(NELM, "936")
-  field(DESC, "Fill pattern")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(waveform, "$(DEVICE):BUCKETS_60") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))buckets60")
-  field(FTVL, "DOUBLE")
-  field(NELM, "936")
-  field(DESC, "Fill pattern 60s")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(waveform, "$(DEVICE):BUCKETS_180") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))buckets180")
-  field(FTVL, "DOUBLE")
-  field(NELM, "936")
-  field(DESC, "Fill pattern 180s")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
 
 record(waveform, "$(DEVICE):PROFILE") {
   field(DTYP, "asynFloat64ArrayIn")
@@ -155,48 +99,6 @@ record(ao, "$(DEVICE):SAMPLE_WIDTH") {
   field(LOPR, "1")
   field(HOPR, "62")
   field(DESC, "Sample width")
-}
-
-record(ai, "$(DEVICE):SOCS_60") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))socs_60")
-  field(EGU,  "nC^2")
-  field(PREC, "0")
-  field(DESC, "Total counts squared")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-  field(HSV,  "MINOR")
-  field(HIGH, "490")
-  field(HHSV, "MAJOR")
-  field(HIHI, "500")
-}
-
-record(ai, "$(DEVICE):SOCS_180") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))socs_180")
-  field(EGU,  "nC^2")
-  field(PREC, "0")
-  field(DESC, "Total counts squared")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-  field(HSV,  "MINOR")
-  field(HIGH, "490")
-  field(HHSV, "MAJOR")
-  field(HIHI, "500")
-}
-
-record(ai, "$(DEVICE):SOCS_5") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))socs_5")
-  field(EGU,  "nC^2")
-  field(PREC, "0")
-  field(DESC, "Total counts squared")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-  field(HSV,  "MINOR")
-  field(HIGH, "490")
-  field(HHSV, "MAJOR")
-  field(HIHI, "500")
 }
 
 record(ai, "$(DEVICE):COUNT_RATE_0") {

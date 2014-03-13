@@ -20,12 +20,15 @@ struct pico_data
     int device;     /* Device ID used when talking to picoharp. */
 
     /* EPICS */
-    double buckets[BUCKETS];
-    double buckets60[BUCKETS];
-    double buckets180[BUCKETS];
-    double samples[HISTCHAN];       // Samples and 60, 180 second buffers
-    double samples60[HISTCHAN];
-    double samples180[HISTCHAN];
+    double samples_5[HISTCHAN];
+    double samples_60[HISTCHAN];
+    double samples_180[HISTCHAN];
+    double buckets_5[BUCKETS];
+    double buckets_60[BUCKETS];
+    double buckets_180[BUCKETS];
+    double socs_5;
+    double socs_60;
+    double socs_180;
     double profile[SAMPLES_PER_PROFILE];
     double peak;
     double flux;
@@ -34,9 +37,6 @@ struct pico_data
     double max_bin;
     double shift;
     double sample_width;
-    double socs_5;      // Sum of counts squared
-    double socs_60;
-    double socs_180;
     double count_rate_0;    // Channel count rates
     double count_rate_1;
     double resolution;

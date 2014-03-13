@@ -37,13 +37,15 @@
 #define EXPORT_PICO(member, extra...) \
     EXPORT_ARRAY(struct pico_data, double, member, extra)
 static struct struct_info picoStructInfo[] = {
-    EXPORT_PICO(buckets,    .alarmed = true),
-    EXPORT_PICO(buckets60,  .alarmed = true),
-    EXPORT_PICO(buckets180, .alarmed = true),
-
-    EXPORT_PICO(samples,    .alarmed = true),
-    EXPORT_PICO(samples60,  .alarmed = true),
-    EXPORT_PICO(samples180, .alarmed = true),
+    EXPORT_PICO(samples_5,    .alarmed = true),
+    EXPORT_PICO(samples_60,  .alarmed = true),
+    EXPORT_PICO(samples_180, .alarmed = true),
+    EXPORT_PICO(buckets_5,    .alarmed = true),
+    EXPORT_PICO(buckets_60,  .alarmed = true),
+    EXPORT_PICO(buckets_180, .alarmed = true),
+    EXPORT_PICO(socs_5,    .alarmed = true),
+    EXPORT_PICO(socs_60,  .alarmed = true),
+    EXPORT_PICO(socs_180, .alarmed = true),
 
     EXPORT_PICO(profile,    .alarmed = true),
     EXPORT_PICO(peak),
@@ -53,9 +55,6 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(max_bin,    .alarmed = true),
     EXPORT_PICO(shift),
     EXPORT_PICO(sample_width),
-    EXPORT_PICO(socs_5,     .alarmed = true),
-    EXPORT_PICO(socs_60,    .alarmed = true),
-    EXPORT_PICO(socs_180,   .alarmed = true),
     EXPORT_PICO(count_rate_0),
     EXPORT_PICO(count_rate_1),
     EXPORT_PICO(freq),

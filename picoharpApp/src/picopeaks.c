@@ -169,26 +169,26 @@ void pico_average(struct pico_data *self)
 {
     /* Capture the raw counts. */
     for (int n = 0; n < HISTCHAN; ++n)
-        self->samples[n] = self->countsbuffer[n];
+        self->samples_5[n] = self->countsbuffer[n];
     /* Compute the bucket profile by summing samples over all buckets. */
     memset(self->profile, 0, sizeof(self->profile));
     for (int n = 0; n < BUCKETS; n++)
     {
         int ix = bucket_start[n];
         for (int s = 0; s < SAMPLES_PER_PROFILE; s++)
-            self->profile[s] += self->samples[ix + s];
+            self->profile[s] += self->samples_5[ix + s];
     }
 
     double counts_fill = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)
-        counts_fill += self->samples[n];
+        counts_fill += self->samples_5[n];
 
     /* all counts > 0 */
     double max_bin = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)
     {
-        if (self->samples[n] > max_bin)
-            max_bin = self->samples[n];
+        if (self->samples_5[n] > max_bin)
+            max_bin = self->samples_5[n];
     }
 
     self->flux = counts_fill / self->time * 1000 / self->freq * BUCKETS;
@@ -203,28 +203,28 @@ void pico_average(struct pico_data *self)
 
     /* 60 and 180 second averages */
 
-    memcpy(&self->buffer60[self->index60][0], self->samples,
+    memcpy(&self->buffer60[self->index60][0], self->samples_5,
         HISTCHAN * sizeof(double));
 
-    memcpy(&self->buffer180[self->index180][0], self->samples,
+    memcpy(&self->buffer180[self->index180][0], self->samples_5,
         HISTCHAN * sizeof(double));
 
     self->index60 = (self->index60 + 1) % BUFFERS_60;
     self->index180 = (self->index180 + 1) % BUFFERS_180;
 
-    memset(self->samples60, 0, HISTCHAN * sizeof(double));
+    memset(self->samples_60, 0, HISTCHAN * sizeof(double));
     for (int k = 0; k < BUFFERS_60; ++k)
         for (int n = 0; n < HISTCHAN; ++n)
-            self->samples60[n] += self->buffer60[k][n];
+            self->samples_60[n] += self->buffer60[k][n];
 
-    memset(self->samples180, 0, HISTCHAN * sizeof(double));
+    memset(self->samples_180, 0, HISTCHAN * sizeof(double));
     for (int k = 0; k < BUFFERS_180; ++k)
         for (int n = 0; n < HISTCHAN; ++n)
-            self->samples180[n] += self->buffer180[k][n];
+            self->samples_180[n] += self->buffer180[k][n];
 
-    pico_peaks(self, self->samples, self->buckets, &self->socs_5);
-    pico_peaks(self, self->samples60, self->buckets60, &self->socs_60);
-    pico_peaks(self, self->samples180, self->buckets180, &self->socs_180);
+    pico_peaks(self, self->samples_5, self->buckets_5, &self->socs_5);
+    pico_peaks(self, self->samples_60, self->buckets_60, &self->socs_60);
+    pico_peaks(self, self->samples_180, self->buckets_180, &self->socs_180);
 }
 
 

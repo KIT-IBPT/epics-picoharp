@@ -38,3 +38,15 @@ class PicoharpDb(Substitution):
     Dependencies = (Picoharp,)
     TemplateFile = 'picoharp.db'
     Arguments = ('DEVICE', 'PORT', 'EVENT')
+
+class PicoharpData(Substitution):
+    Dependecies = (Picoharp,)
+    TemplateFile = 'picodata.db'
+    Arguments = ('DEVICE', 'PORT', 'EVENT', 'SUFFIX')
+
+def PicoharpInstance(device, port, serial, event):
+    Picoharp(port, serial, event, 0, 300, 100, 10, 5, 1, 3)
+    for suffix in ['5', '60', '180']:
+        PicoharpData(
+            DEVICE = device, PORT = port, EVENT = event, SUFFIX = suffix)
+    PicoharpDb(DEVICE = device, PORT = port, EVENT = event)
