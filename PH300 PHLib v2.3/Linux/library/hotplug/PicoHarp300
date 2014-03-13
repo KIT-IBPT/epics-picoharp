@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [ "${ACTION}" = "add" ] && [ -f "${DEVICE}" ]
-then
-        chown root "${DEVICE}"
-        chgrp users "${DEVICE}"
-        chmod 666 "${DEVICE}"
-fi
