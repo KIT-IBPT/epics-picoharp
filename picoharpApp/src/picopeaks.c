@@ -89,7 +89,7 @@ static int find_pico_device(const char *serial)
     }
     else
     {
-        printf("Unable to find any available device\n");
+        printf("Unable to find any available device for s/n %s\n", serial);
         return -1;
     }
 }

@@ -205,18 +205,21 @@ static asynOctet asynOctetImpl = { .read = oct_read };
 static void picoThreadFunc(void *pvt)
 {
     struct pico_pvt *pico = pvt;
-    bool ok = true;
 
     printf("pico_init\n");
     epicsMutexMustLock(pico->lock);
-    ok = pico_init(&pico->data, pico->serial);
-#if 1
+    if (!pico_init(&pico->data, pico->serial))
+    {
+        epicsMutexUnlock(pico->lock);
+        epicsEventSignal(pico->started);
+        return;
+    }
+
     epicsThreadSleep(1.0);
-#endif
     epicsMutexUnlock(pico->lock);
 
     bool first = true;
-    while (ok)
+    while (true)
     {
         /* acquire the data (usually 5s) */
         epicsMutexMustLock(pico->lock);
@@ -259,8 +262,6 @@ static void picoThreadFunc(void *pvt)
             /* backoff in case of failure */
             epicsThreadSleep(1.0);
     }
-
-    printf("Picoharp thread terminating\n");
 }
 
 /* port creation */
