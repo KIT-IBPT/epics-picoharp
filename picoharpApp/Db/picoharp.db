@@ -1,4 +1,3 @@
-alias("$(DEVICE):FILL_5", "$(DEVICE):FILL")
 alias("$(DEVICE):BUCKETS_5", "$(DEVICE):BUCKETS")
 
 

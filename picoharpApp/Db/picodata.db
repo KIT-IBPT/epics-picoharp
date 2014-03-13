@@ -5,9 +5,9 @@
 #% macro, SUFFIX, Suffix for name
 #% macro, EVENT, Event number used for update signalling
 
-record(waveform, "$(DEVICE):FILL_$(SUFFIX)") {
+record(waveform, "$(DEVICE):SAMPLES_$(SUFFIX)") {
   field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))samples_$(SUFFIX)")
+  field(INP,  "@asyn($(PORT))samples_$(ASUFFIX)")
   field(FTVL, "DOUBLE")
   field(NELM, "65536")
   field(DESC, "Raw picoharp signal")
@@ -15,19 +15,47 @@ record(waveform, "$(DEVICE):FILL_$(SUFFIX)") {
   field(EVNT, "$(EVENT)")
 }
 
-record(waveform, "$(DEVICE):BUCKETS_$(SUFFIX)") {
+record(waveform, "$(DEVICE):RAW_BUCKETS_$(SUFFIX)") {
   field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))buckets_$(SUFFIX)")
+  field(INP,  "@asyn($(PORT))raw_buckets_$(ASUFFIX)")
   field(FTVL, "DOUBLE")
   field(NELM, "936")
-  field(DESC, "Fill pattern")
+  field(DESC, "Uncorrected fill pattern")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):FIXUP_$(SUFFIX)") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))fixup_$(ASUFFIX)")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Fill pattern correction factor")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):MAX_FIXUP_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))max_fixup_$(ASUFFIX)")
+  field(DESC, "Maximum correction factor")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(waveform, "$(DEVICE):BUCKETS_$(SUFFIX)") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))buckets_$(ASUFFIX)")
+  field(FTVL, "DOUBLE")
+  field(NELM, "936")
+  field(DESC, "Corrected fill pattern")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
 }
 
 record(ai, "$(DEVICE):SOCS_$(SUFFIX)") {
   field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))socs_$(SUFFIX)")
+  field(INP,  "@asyn($(PORT))socs_$(ASUFFIX)")
   field(EGU,  "nC^2")
   field(PREC, "0")
   field(DESC, "Total counts squared")

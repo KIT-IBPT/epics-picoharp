@@ -37,15 +37,41 @@
 #define EXPORT_PICO(member, extra...) \
     EXPORT_ARRAY(struct pico_data, double, member, extra)
 static struct struct_info picoStructInfo[] = {
+    EXPORT_PICO(samples_fast, .alarmed = true),
     EXPORT_PICO(samples_5,    .alarmed = true),
     EXPORT_PICO(samples_60,  .alarmed = true),
     EXPORT_PICO(samples_180, .alarmed = true),
+    EXPORT_PICO(samples_all, .alarmed = true),
+
+    EXPORT_PICO(raw_buckets_fast, .alarmed = true),
+    EXPORT_PICO(raw_buckets_5,    .alarmed = true),
+    EXPORT_PICO(raw_buckets_60,  .alarmed = true),
+    EXPORT_PICO(raw_buckets_180, .alarmed = true),
+    EXPORT_PICO(raw_buckets_all, .alarmed = true),
+
+    EXPORT_PICO(fixup_fast, .alarmed = true),
+    EXPORT_PICO(fixup_5,    .alarmed = true),
+    EXPORT_PICO(fixup_60,  .alarmed = true),
+    EXPORT_PICO(fixup_180, .alarmed = true),
+    EXPORT_PICO(fixup_all, .alarmed = true),
+
+    EXPORT_PICO(max_fixup_fast, .alarmed = true),
+    EXPORT_PICO(max_fixup_5,    .alarmed = true),
+    EXPORT_PICO(max_fixup_60,  .alarmed = true),
+    EXPORT_PICO(max_fixup_180, .alarmed = true),
+    EXPORT_PICO(max_fixup_all, .alarmed = true),
+
+    EXPORT_PICO(buckets_fast, .alarmed = true),
     EXPORT_PICO(buckets_5,    .alarmed = true),
     EXPORT_PICO(buckets_60,  .alarmed = true),
     EXPORT_PICO(buckets_180, .alarmed = true),
+    EXPORT_PICO(buckets_all, .alarmed = true),
+
+    EXPORT_PICO(socs_fast, .alarmed = true),
     EXPORT_PICO(socs_5,    .alarmed = true),
     EXPORT_PICO(socs_60,  .alarmed = true),
     EXPORT_PICO(socs_180, .alarmed = true),
+    EXPORT_PICO(socs_all, .alarmed = true),
 
     EXPORT_PICO(profile,    .alarmed = true),
     EXPORT_PICO(peak),
