@@ -40,9 +40,11 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(buckets,    .alarmed = true),
     EXPORT_PICO(buckets60,  .alarmed = true),
     EXPORT_PICO(buckets180, .alarmed = true),
+
     EXPORT_PICO(samples,    .alarmed = true),
     EXPORT_PICO(samples60,  .alarmed = true),
     EXPORT_PICO(samples180, .alarmed = true),
+
     EXPORT_PICO(profile,    .alarmed = true),
     EXPORT_PICO(peak),
     EXPORT_PICO(flux,       .alarmed = true),
@@ -51,10 +53,6 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(max_bin,    .alarmed = true),
     EXPORT_PICO(shift),
     EXPORT_PICO(sample_width),
-    EXPORT_PICO(counts_fill, .alarmed = true),
-    EXPORT_PICO(counts_5,   .alarmed = true),
-    EXPORT_PICO(counts_60,  .alarmed = true),
-    EXPORT_PICO(counts_180, .alarmed = true),
     EXPORT_PICO(socs_5,     .alarmed = true),
     EXPORT_PICO(socs_60,    .alarmed = true),
     EXPORT_PICO(socs_180,   .alarmed = true),

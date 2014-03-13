@@ -140,12 +140,11 @@ static double sum_peaks(struct pico_data *self, double *samples, double *bins)
 
 
 static void pico_peaks(
-    struct pico_data *self,
-    double *f, double *s, double *total_counts, double *sum_of_squares)
+    struct pico_data *self, double *f, double *s, double *sum_of_squares)
 {
-    *total_counts = sum_peaks(self, f, s);
-    if (*total_counts <= 0)
-        *total_counts = 1;
+    double total_counts = sum_peaks(self, f, s);
+    if (total_counts <= 0)
+        total_counts = 1;
 
     double charge = self->charge;
     if (charge < 0)
@@ -155,7 +154,7 @@ static void pico_peaks(
     *sum_of_squares = 0;
     for (int k = 0; k < BUCKETS; ++k)
     {
-        perm[k] = s[k] / *total_counts * charge;
+        perm[k] = s[k] / total_counts * charge;
         *sum_of_squares += perm[k] * perm[k];
     }
 
@@ -180,9 +179,9 @@ void pico_average(struct pico_data *self)
             self->profile[s] += self->samples[ix + s];
     }
 
-    self->counts_fill = 0.0;
+    double counts_fill = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)
-        self->counts_fill += self->samples[n];
+        counts_fill += self->samples[n];
 
     /* all counts > 0 */
     double max_bin = 0.0;
@@ -192,7 +191,7 @@ void pico_average(struct pico_data *self)
             max_bin = self->samples[n];
     }
 
-    self->flux = self->counts_fill / self->time * 1000 / self->freq * BUCKETS;
+    self->flux = counts_fill / self->time * 1000 / self->freq * BUCKETS;
     self->max_bin = max_bin;
     self->peak = pico_detect_peak(self);
 
@@ -214,26 +213,18 @@ void pico_average(struct pico_data *self)
     self->index180 = (self->index180 + 1) % BUFFERS_180;
 
     memset(self->samples60, 0, HISTCHAN * sizeof(double));
-    memset(self->samples180, 0, HISTCHAN * sizeof(double));
-
     for (int k = 0; k < BUFFERS_60; ++k)
-    {
         for (int n = 0; n < HISTCHAN; ++n)
             self->samples60[n] += self->buffer60[k][n];
-    }
 
+    memset(self->samples180, 0, HISTCHAN * sizeof(double));
     for (int k = 0; k < BUFFERS_180; ++k)
-    {
         for (int n = 0; n < HISTCHAN; ++n)
             self->samples180[n] += self->buffer180[k][n];
-    }
 
-    pico_peaks(self,
-        self->samples, self->buckets, &self->counts_5, &self->socs_5);
-    pico_peaks(self,
-        self->samples60, self->buckets60, &self->counts_60, &self->socs_60);
-    pico_peaks(self,
-        self->samples180, self->buckets180, &self->counts_180, &self->socs_180);
+    pico_peaks(self, self->samples, self->buckets, &self->socs_5);
+    pico_peaks(self, self->samples60, self->buckets60, &self->socs_60);
+    pico_peaks(self, self->samples180, self->buckets180, &self->socs_180);
 }
 
 
@@ -329,9 +320,6 @@ bool pico_init(struct pico_data *self, const char *serial)
     self->peak = 45;
     self->sample_width = 10;
     self->shift = 652;
-    self->counts_5 = 1;
-    self->counts_60 = 1;
-    self->counts_180 = 1;
     self->socs_5 = 0;
     self->socs_60 = 0;
     self->socs_180 = 0;

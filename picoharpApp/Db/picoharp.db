@@ -157,46 +157,6 @@ record(ao, "$(DEVICE):SAMPLE_WIDTH") {
   field(DESC, "Sample width")
 }
 
-record(ai, "$(DEVICE):COUNTS_FILL") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))counts_fill")
-  field(EGU,  "Counts")
-  field(PREC, "0")
-  field(DESC, "Total Counts from FILL")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(ai, "$(DEVICE):COUNTS_5") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))counts_5")
-  field(EGU,  "Counts")
-  field(PREC, "0")
-  field(DESC, "Total Counts BUCKETS")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(ai, "$(DEVICE):COUNTS_60") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))counts_60")
-  field(EGU,  "Counts")
-  field(PREC, "0")
-  field(DESC, "Total Counts BUCKETS_60")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
-record(ai, "$(DEVICE):COUNTS_180") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))counts_180")
-  field(EGU,  "Counts")
-  field(PREC, "0")
-  field(DESC, "Total Counts BUCKETS_180")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
-}
-
 record(ai, "$(DEVICE):SOCS_60") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn($(PORT))socs_60")

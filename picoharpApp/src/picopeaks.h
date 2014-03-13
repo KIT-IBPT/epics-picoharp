@@ -34,10 +34,6 @@ struct pico_data
     double max_bin;
     double shift;
     double sample_width;
-    double counts_fill;
-    double counts_5;
-    double counts_60;
-    double counts_180;
     double socs_5;      // Sum of counts squared
     double socs_60;
     double socs_180;
