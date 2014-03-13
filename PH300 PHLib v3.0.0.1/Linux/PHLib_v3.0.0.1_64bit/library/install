@@ -1,0 +1,16 @@
+#!/bin/sh
+
+mkdir -p /usr/local/lib64/ph300
+cp phlib.so /usr/local/lib64/ph300/
+chmod 755 /usr/local/lib64/ph300/phlib.so
+cp phlib.h  /usr/local/lib64/ph300/
+cp phdefin.h  /usr/local/lib64/ph300/
+cp errorcodes.h  /usr/local/lib64/ph300/
+chmod 644 /usr/local/lib64/ph300/*.h
+
+# the following is a hack for Lazarus and C# that have trouble
+# if the library is not following the naming convention
+# libXXX.so and also does not find the lib at runtime if it
+# is not in the libary search path 
+ln -f /usr/local/lib64/ph300/phlib.so /usr/lib64/libph300.so
+

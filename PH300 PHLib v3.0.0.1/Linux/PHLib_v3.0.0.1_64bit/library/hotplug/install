@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cp PicoHarp300.usermap /etc/hotplug/usb
+cp PicoHarp300 /etc/hotplug/usb
