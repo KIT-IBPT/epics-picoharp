@@ -246,7 +246,7 @@ static void picoThreadFunc(void *pvt)
     {
         /* acquire the data (usually 5s) */
         epicsMutexMustLock(pico->lock);
-        int pico_time = pico->data.time;
+        int pico_time = (int) pico->data.time;
         epicsMutexUnlock(pico->lock);
 
         /* clear error and measure */

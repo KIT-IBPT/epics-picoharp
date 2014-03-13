@@ -16,6 +16,7 @@ USR_CFLAGS += -Wredundant-decls
 USR_CFLAGS += -Wmissing-prototypes
 USR_CFLAGS += -Wmissing-declarations
 USR_CFLAGS += -Wstrict-prototypes
+USR_CFLAGS += -Wconversion
 
 LIBRARY_IOC += pico
 

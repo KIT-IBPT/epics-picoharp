@@ -239,14 +239,14 @@ static bool pico_set_config(struct pico_data *self)
     printf("SyncDiv   %g\n", self->SyncDiv);
     printf("Range     %g\n", self->Range);
 
-    PICO_CHECK(PH_SetSyncDiv(self->device, self->SyncDiv));
+    PICO_CHECK(PH_SetSyncDiv(self->device, (int) self->SyncDiv));
     PICO_CHECK(PH_SetInputCFD(
-        self->device, 0, self->CFDLevel0, self->CFDZeroX0));
+        self->device, 0, (int) self->CFDLevel0, (int) self->CFDZeroX0));
     PICO_CHECK(PH_SetInputCFD(
-        self->device, 1, self->CFDLevel1, self->CFDZeroX1));
-    PICO_CHECK(PH_SetOffset(self->device, self->Offset));
+        self->device, 1, (int) self->CFDLevel1, (int) self->CFDZeroX1));
+    PICO_CHECK(PH_SetOffset(self->device, (int) self->Offset));
     PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
-    PICO_CHECK(PH_SetBinning(self->device, self->Range));
+    PICO_CHECK(PH_SetBinning(self->device, (int) self->Range));
 
     PICO_CHECK(PH_GetResolution(self->device, &self->resolution));
 
@@ -274,7 +274,7 @@ bool pico_measure(struct pico_data *self, int time)
         PICO_CHECK(PH_CTCStatus(self->device, &done));
         if(done)
             break;
-        usleep(0.01);
+        usleep(10000);  // 10 ms poll
     }
 
     int Flags = 0;
