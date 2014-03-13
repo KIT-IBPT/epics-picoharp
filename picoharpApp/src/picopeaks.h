@@ -15,47 +15,30 @@
 #define BUFFERS_180 36
 /*(180/5)*/
 
+#define DECLARE_RANGE(name, suffix...) \
+    double name##_fast suffix; \
+    double name##_5 suffix; \
+    double name##_60 suffix; \
+    double name##_180 suffix; \
+    double name##_all suffix
+
 struct pico_data
 {
     int device;     /* Device ID used when talking to picoharp. */
 
     /* EPICS */
 
-    double samples_fast[HISTCHAN];  // Samples and 60, 180 second buffers
-    double samples_5[HISTCHAN];
-    double samples_60[HISTCHAN];
-    double samples_180[HISTCHAN];
-    double samples_all[HISTCHAN];
+    /* These variables belong in a structure.  Unfortunately given the history
+     * of this project doing this will take more time than we have. */
 
-    double raw_buckets_fast[BUCKETS];   // Raw buckets
-    double raw_buckets_5[BUCKETS];
-    double raw_buckets_60[BUCKETS];
-    double raw_buckets_180[BUCKETS];
-    double raw_buckets_all[BUCKETS];
+    DECLARE_RANGE(samples,      [HISTCHAN]);    // Raw samples from picoharp
+    DECLARE_RANGE(raw_buckets,  [BUCKETS]);     // Uncorrected fill patter
+    DECLARE_RANGE(fixup,        [BUCKETS]);     // Correction factor
+    DECLARE_RANGE(max_fixup);                   // Maximum correction factor
+    DECLARE_RANGE(buckets,      [BUCKETS]);     // Corrected fill pattern
+    DECLARE_RANGE(socs);                        // Sum of Charge Squared
+    DECLARE_RANGE(turns);                       // Turn count for capture
 
-    double fixup_fast[BUCKETS];     // Correction factor
-    double fixup_5[BUCKETS];
-    double fixup_60[BUCKETS];
-    double fixup_180[BUCKETS];
-    double fixup_all[BUCKETS];
-
-    double max_fixup_fast;          // Maxium correction factor
-    double max_fixup_5;
-    double max_fixup_60;
-    double max_fixup_180;
-    double max_fixup_all;
-
-    double buckets_fast[BUCKETS];   // Corrected buckets
-    double buckets_5[BUCKETS];
-    double buckets_60[BUCKETS];
-    double buckets_180[BUCKETS];
-    double buckets_all[BUCKETS];
-
-    double socs_fast;               // Sum of counts squared
-    double socs_5;
-    double socs_60;
-    double socs_180;
-    double socs_all;
 
     double profile[SAMPLES_PER_PROFILE];
     double peak;
@@ -73,9 +56,7 @@ struct pico_data
     double charge; /* DCCT charge (nC) */
     double dcct_alarm; /* DCCT monitor alarm status (!) */
 
-
-    int index60;
-    int index180;
+    int current_time;           // Time used for current capture
 
     /* PicoHarp sampling parameters (st.cmd) */
     double Offset;
@@ -86,6 +67,8 @@ struct pico_data
     double SyncDiv;
     double Range;
 
+    double deadtime;            // Detector deadtime for correction
+
     bool parameter_updated;     // Set if parameters should be reloaded
     double reset_accum;         // If set to 1 then accumulator will be reset
 
@@ -94,17 +77,16 @@ struct pico_data
     unsigned int countsbuffer[HISTCHAN];
     char errstr[ERRBUF];
 
-#ifdef PICO_TEST_MATLAB_HEADER
 
-    double buffer60[786432];
-    double buffer180[2359296];
+    int index60;
+    int index180;
 
-#else
-
+    double buffer5[HISTCHAN];
     double buffer60[BUFFERS_60][HISTCHAN];
     double buffer180[BUFFERS_180][HISTCHAN];
-
-#endif
+    double turns_buffer5;
+    double turns_buffer60[BUFFERS_60];
+    double turns_buffer180[BUFFERS_180];
 };
 
 /* Called to initialise connection to picoharp with given serial number, returns
@@ -112,7 +94,8 @@ struct pico_data
 bool pico_init(struct pico_data *self, const char *serial);
 
 /* Processes data captured by call to pico_measure. */
-void pico_average(struct pico_data *self);
+void pico_process_fast(struct pico_data *self);
+void pico_process_5s(struct pico_data *self);
 
 /* Communicates with picoharp to perform a measurement using currently
  * configured settings, reconfigures picoharp as necessary. */

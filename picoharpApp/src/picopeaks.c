@@ -95,25 +95,9 @@ static int find_pico_device(const char *serial)
 }
 
 
-/* return index of first peak in picoharp buffer */
-static int pico_detect_peak(struct pico_data *self)
-{
-    double max = 0;
-    int peak = 0;
-    for (int i = 0; i < SAMPLES_PER_PROFILE; i ++)
-    {
-        if (self->profile[i] > max)
-        {
-            max = self->profile[i];
-            peak = i;
-        }
-    }
-    return peak;
-}
-
-
 /* Accumulates raw samples into bins and returns total sum. */
-static double sum_peaks(struct pico_data *self, double *samples, double *bins)
+static double sum_peaks(
+    struct pico_data *self, int shift, const double samples[], double bins[])
 {
     /* Compute accumulation window from programmed sample width and discovered
      * peak, but ensure window fits entirely within a single bin. */
@@ -132,99 +116,204 @@ static double sum_peaks(struct pico_data *self, double *samples, double *bins)
         double sum = 0;
         for (int j = start; j < end; j ++)
             sum += samples[j];
-        bins[k] = sum;
+        bins[(k + BUCKETS - shift) % BUCKETS] = sum;
         total += sum;
     }
     return total;
 }
 
 
-static void pico_peaks(
-    struct pico_data *self, double *f, double *s, double *sum_of_squares)
+/* Apply pileup correction to bucket charges and convert bucket fill into
+ * charge. */
+static void correct_peaks(
+    struct pico_data *self,
+    int length, double turns, const double raw_buckets[], double fixup[],
+    double *max_fixup, double buckets[])
 {
-    double total_counts = sum_peaks(self, f, s);
-    if (total_counts <= 0)
-        total_counts = 1;
-
-    double charge = self->charge;
-    if (charge < 0)
-        charge = 0;
-
-    double perm[BUCKETS];
-    *sum_of_squares = 0;
-    for (int k = 0; k < BUCKETS; ++k)
+    *max_fixup = 0;
+    double total_counts = 0;
+    for (int i = 0; i < BUCKETS; i ++)
     {
-        perm[k] = s[k] / total_counts * charge;
-        *sum_of_squares += perm[k] * perm[k];
+        /* Compute pileup factor by counting number of observed events preceding
+         * this one.  We convert counts into counts per turn. */
+        double sum = 0;
+        for (int j = 0; j < length; j ++)
+            sum += raw_buckets[(i + BUCKETS - j) % BUCKETS];
+        double sum_turn = sum / turns;
+
+        /* Compute pileup correction. */
+        fixup[i] = 1 / (1 - sum_turn);
+        if (fixup[i] > *max_fixup)
+            *max_fixup = fixup[i];
+
+        /* Compute corrected count per bucket. */
+        buckets[i] = raw_buckets[i] * fixup[i];
+        total_counts += buckets[i];
     }
 
-    /* circular shift */
-    for (int k = 0; k < BUCKETS; ++k)
-        s[k] = perm[(k + (int) self->shift) % BUCKETS] + LOG_PLOT_OFFSET;
+    /* Scale buckets by pileup correction and current scaling factor. */
+    for (int i = 0; i < BUCKETS; i ++)
+        if (total_counts > 0)
+        {
+            buckets[i] *= self->charge / total_counts;
+            if (buckets[i] < LOG_PLOT_OFFSET)
+                /* Fudge for EDM display. */
+                buckets[i] = LOG_PLOT_OFFSET;
+        }
+        else
+            buckets[i] = 0;
 }
 
 
-/* Analyses captured data, does not communicate with instrument. */
-void pico_average(struct pico_data *self)
+static void process_pico_peaks(
+    struct pico_data *self, double turns, const double samples[],
+    double raw_buckets[], double fixup[], double *max_fixup,
+    double buckets[], double *socs)
 {
-    /* Capture the raw counts. */
-    for (int n = 0; n < HISTCHAN; ++n)
-        self->samples_5[n] = self->countsbuffer[n];
-    /* Compute the bucket profile by summing samples over all buckets. */
-    memset(self->profile, 0, sizeof(self->profile));
+    sum_peaks(self, (int) self->shift, samples, raw_buckets);
+
+    correct_peaks(
+        self, (int) self->deadtime,
+        turns, raw_buckets, fixup, max_fixup, buckets);
+
+    *socs = 0;
+    for (int k = 0; k < BUCKETS; ++k)
+        *socs += buckets[k] * buckets[k];
+}
+
+#define PROCESS_PICO_PEAKS(self, period) \
+    process_pico_peaks(self, \
+        self->turns_##period, self->samples_##period, \
+        self->raw_buckets_##period, \
+        self->fixup_##period, &self->max_fixup_##period, \
+        self->buckets_##period, &self->socs_##period)
+
+
+/* Compute profile by folding all buckets together. */
+static void compute_profile(const double samples[], double profile[])
+{
+    memset(profile, 0, SAMPLES_PER_PROFILE * sizeof(double));
     for (int n = 0; n < BUCKETS; n++)
     {
         int ix = bucket_start[n];
         for (int s = 0; s < SAMPLES_PER_PROFILE; s++)
-            self->profile[s] += self->samples_5[ix + s];
+            profile[s] += samples[ix + s];
     }
+}
 
+/* Discover the peak of the profile. */
+static int compute_peak(const double profile[])
+{
+    double max = 0;
+    int peak = 0;
+    for (int i = 0; i < SAMPLES_PER_PROFILE; i ++)
+    {
+        if (profile[i] > max)
+        {
+            max = profile[i];
+            peak = i;
+        }
+    }
+    return peak;
+}
+
+static double compute_max_bin(const double samples[])
+{
+    double max_bin = 0.0;
+    for (int n = 0; n < HISTCHAN; n ++)
+    {
+        if (samples[n] > max_bin)
+            max_bin = samples[n];
+    }
+    return max_bin;
+}
+
+/* Updates flux. */
+static void compute_flux(struct pico_data *self)
+{
     double counts_fill = 0.0;
     for (int n = 0; n < HISTCHAN; ++n)
         counts_fill += self->samples_5[n];
+    self->flux = counts_fill / self->turns_5;
 
-    /* all counts > 0 */
-    double max_bin = 0.0;
-    for (int n = 0; n < HISTCHAN; ++n)
-    {
-        if (self->samples_5[n] > max_bin)
-            max_bin = self->samples_5[n];
-    }
-
-    self->flux = counts_fill / self->time * 1000 / self->freq * BUCKETS;
-    self->max_bin = max_bin;
-    self->peak = pico_detect_peak(self);
-
-    if (self->charge > 0.01)
+    if (self->charge > 0.001)
         self->nflux = self->flux / self->charge;
     else
         self->nflux = 0;
+}
 
 
-    /* 60 and 180 second averages */
+static void accum_buffer(
+    struct pico_data *self,
+    int count, const double samples_in[], int *ix,
+    double buffer[][HISTCHAN], double samples_out[],
+    double turns_buffer[], double *turns)
+{
+    turns_buffer[*ix] = self->turns_5;
+    memcpy(buffer[*ix], samples_in, HISTCHAN * sizeof(double));
+    *ix = (*ix + 1) % count;
 
-    memcpy(&self->buffer60[self->index60][0], self->samples_5,
-        HISTCHAN * sizeof(double));
+    memset(samples_out, 0, HISTCHAN * sizeof(double));
+    for (int i = 0; i < count; i ++)
+        for (int j = 0; j < HISTCHAN; j ++)
+            samples_out[j] += buffer[i][j];
 
-    memcpy(&self->buffer180[self->index180][0], self->samples_5,
-        HISTCHAN * sizeof(double));
+    *turns = 0;
+    for (int i = 0; i < count; i ++)
+        *turns += turns_buffer[i];
+}
 
-    self->index60 = (self->index60 + 1) % BUFFERS_60;
-    self->index180 = (self->index180 + 1) % BUFFERS_180;
+#define ACCUM_BUFFER(self, count) \
+    accum_buffer(self, BUFFERS_##count, \
+        self->samples_5, &self->index##count, \
+        self->buffer##count, self->samples_##count, \
+        self->turns_buffer##count, &self->turns_##count)
 
-    memset(self->samples_60, 0, HISTCHAN * sizeof(double));
-    for (int k = 0; k < BUFFERS_60; ++k)
-        for (int n = 0; n < HISTCHAN; ++n)
-            self->samples_60[n] += self->buffer60[k][n];
 
-    memset(self->samples_180, 0, HISTCHAN * sizeof(double));
-    for (int k = 0; k < BUFFERS_180; ++k)
-        for (int n = 0; n < HISTCHAN; ++n)
-            self->samples_180[n] += self->buffer180[k][n];
+void pico_process_fast(struct pico_data *self)
+{
+    /* Capture raw data and convert into common format. */
+    for (int n = 0; n < HISTCHAN; n ++)
+        self->samples_fast[n] = self->countsbuffer[n];
 
-    pico_peaks(self, self->samples_5, self->buckets_5, &self->socs_5);
-    pico_peaks(self, self->samples_60, self->buckets_60, &self->socs_60);
-    pico_peaks(self, self->samples_180, self->buckets_180, &self->socs_180);
+    compute_profile(self->samples_fast, self->profile);
+    self->peak = compute_peak(self->profile);
+    self->max_bin = compute_max_bin(self->samples_fast);
+
+    self->turns_fast = 1e-3 * self->current_time * self->freq / BUCKETS;
+    PROCESS_PICO_PEAKS(self, fast);
+
+    /* Accumulate fast buffer into 5 second buffer. */
+    for (int i = 0; i < HISTCHAN; i ++)
+        self->buffer5[i] += self->samples_fast[i];
+    self->turns_buffer5 += self->turns_fast;
+}
+
+
+void pico_process_5s(struct pico_data *self)
+{
+    memcpy(self->samples_5, self->buffer5, sizeof(self->samples_5));
+    self->turns_5 = self->turns_buffer5;
+
+    /* Accumulate intermediate buffers. */
+    ACCUM_BUFFER(self, 60);
+    ACCUM_BUFFER(self, 180);
+
+    for (int i = 0; i < HISTCHAN; i ++)
+        self->samples_all[i] += self->samples_5[i];
+    self->turns_all += self->turns_5;
+
+    compute_flux(self);
+
+    /* Process everything. */
+    PROCESS_PICO_PEAKS(self, 5);
+    PROCESS_PICO_PEAKS(self, 60);
+    PROCESS_PICO_PEAKS(self, 180);
+    PROCESS_PICO_PEAKS(self, all);
+
+    /* Reset 5 second buffer. */
+    memset(self->buffer5, 0, sizeof(self->buffer5));
+    self->turns_buffer5 = 0;
 }
 
 
@@ -267,6 +356,7 @@ bool pico_measure(struct pico_data *self, int time)
 
     PICO_CHECK(PH_ClearHistMem(self->device, BLOCK));
     PICO_CHECK(PH_StartMeas(self->device, time));
+    self->current_time = time;
 
     while (true)
     {

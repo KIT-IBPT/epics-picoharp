@@ -39,6 +39,7 @@ record(ai, "$(DEVICE):MAX_FIXUP_$(SUFFIX)") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn($(PORT))max_fixup_$(ASUFFIX)")
   field(DESC, "Maximum correction factor")
+  field(PREC, "2")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
 }
@@ -65,4 +66,14 @@ record(ai, "$(DEVICE):SOCS_$(SUFFIX)") {
   field(HIGH, "490")
   field(HHSV, "MAJOR")
   field(HIHI, "500")
+}
+
+record(ai, "$(DEVICE):TURNS_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))turns_$(ASUFFIX)")
+  field(EGU,  "turns")
+  field(PREC, "0")
+  field(DESC, "Number of turns captured")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
 }

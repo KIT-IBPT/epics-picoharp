@@ -8,14 +8,14 @@ record(waveform, "$(DEVICE):PROFILE") {
   field(NELM, "62")
   field(DESC, "Bucket profile")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
 }
 
 record(ai, "$(DEVICE):PEAK") {
   field(DTYP, "asynFloat64")
   field(INP,  "@asyn($(PORT))peak")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
   field(EGU,  "bins")
   field(PREC, "0")
   field(LOPR, "1")
@@ -38,7 +38,7 @@ record(ai, "$(DEVICE):FLUX") {
   field(PREC, "3")
   field(DESC, "Counts observed per turn")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_5S)")
 }
 
 record(ai, "$(DEVICE):NFLUX") {
@@ -48,7 +48,7 @@ record(ai, "$(DEVICE):NFLUX") {
   field(PREC, "1")
   field(DESC, "Normalised counts observed per turn")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_5S)")
 }
 
 #% autosave 2 VAL
@@ -73,7 +73,7 @@ record(ai, "$(DEVICE):MAX_BIN") {
   field(HHSV, "MAJOR")
   field(DESC, "Maximum bin count")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
 }
 
 #% autosave 2 VAL
@@ -107,7 +107,7 @@ record(ai, "$(DEVICE):COUNT_RATE_0") {
   field(PREC, "0")
   field(DESC, "Master clock count rate")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
 }
 
 record(ai, "$(DEVICE):COUNT_RATE_1") {
@@ -117,7 +117,7 @@ record(ai, "$(DEVICE):COUNT_RATE_1") {
   field(PREC, "0")
   field(DESC, "Sample data count rate")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
 }
 
 record(ai, "$(DEVICE):RESOLUTION") {
@@ -127,7 +127,7 @@ record(ai, "$(DEVICE):RESOLUTION") {
   field(PREC, "0")
   field(DESC, "Histogram bin width")
   field(SCAN, "Event")
-  field(EVNT, "$(EVENT)")
+  field(EVNT, "$(EVENT_FAST)")
 }
 
 record(ao, "$(DEVICE):DCCT") {
@@ -245,4 +245,16 @@ record(ao, "$(DEVICE):RANGE") {
   field(LOPR, "0")
   field(HOPR, "7")
   field(DESC, "Measurement range code")
+}
+
+#% autosave 2 VAL
+record(ao, "$(DEVICE):DEADTIME") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))deadtime")
+  field(EGU,  "")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "936")
+  field(DESC, "Detector dead time")
 }

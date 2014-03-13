@@ -36,49 +36,29 @@
 
 #define EXPORT_PICO(member, extra...) \
     EXPORT_ARRAY(struct pico_data, double, member, extra)
+
+#define EXPORT_RANGE(name, extra...) \
+    EXPORT_PICO(name##_fast, extra), \
+    EXPORT_PICO(name##_5, extra), \
+    EXPORT_PICO(name##_60, extra), \
+    EXPORT_PICO(name##_180, extra), \
+    EXPORT_PICO(name##_all, extra)
+
 static struct struct_info picoStructInfo[] = {
-    EXPORT_PICO(samples_fast, .alarmed = true),
-    EXPORT_PICO(samples_5,    .alarmed = true),
-    EXPORT_PICO(samples_60,  .alarmed = true),
-    EXPORT_PICO(samples_180, .alarmed = true),
-    EXPORT_PICO(samples_all, .alarmed = true),
+    EXPORT_RANGE(samples,       .alarmed = true),
+    EXPORT_RANGE(raw_buckets,   .alarmed = true),
+    EXPORT_RANGE(fixup,         .alarmed = true),
+    EXPORT_RANGE(max_fixup,     .alarmed = true),
+    EXPORT_RANGE(buckets,       .alarmed = true),
+    EXPORT_RANGE(socs,          .alarmed = true),
+    EXPORT_RANGE(turns,         .alarmed = true),
 
-    EXPORT_PICO(raw_buckets_fast, .alarmed = true),
-    EXPORT_PICO(raw_buckets_5,    .alarmed = true),
-    EXPORT_PICO(raw_buckets_60,  .alarmed = true),
-    EXPORT_PICO(raw_buckets_180, .alarmed = true),
-    EXPORT_PICO(raw_buckets_all, .alarmed = true),
-
-    EXPORT_PICO(fixup_fast, .alarmed = true),
-    EXPORT_PICO(fixup_5,    .alarmed = true),
-    EXPORT_PICO(fixup_60,  .alarmed = true),
-    EXPORT_PICO(fixup_180, .alarmed = true),
-    EXPORT_PICO(fixup_all, .alarmed = true),
-
-    EXPORT_PICO(max_fixup_fast, .alarmed = true),
-    EXPORT_PICO(max_fixup_5,    .alarmed = true),
-    EXPORT_PICO(max_fixup_60,  .alarmed = true),
-    EXPORT_PICO(max_fixup_180, .alarmed = true),
-    EXPORT_PICO(max_fixup_all, .alarmed = true),
-
-    EXPORT_PICO(buckets_fast, .alarmed = true),
-    EXPORT_PICO(buckets_5,    .alarmed = true),
-    EXPORT_PICO(buckets_60,  .alarmed = true),
-    EXPORT_PICO(buckets_180, .alarmed = true),
-    EXPORT_PICO(buckets_all, .alarmed = true),
-
-    EXPORT_PICO(socs_fast, .alarmed = true),
-    EXPORT_PICO(socs_5,    .alarmed = true),
-    EXPORT_PICO(socs_60,  .alarmed = true),
-    EXPORT_PICO(socs_180, .alarmed = true),
-    EXPORT_PICO(socs_all, .alarmed = true),
-
-    EXPORT_PICO(profile,    .alarmed = true),
+    EXPORT_PICO(profile,        .alarmed = true),
     EXPORT_PICO(peak),
-    EXPORT_PICO(flux,       .alarmed = true),
-    EXPORT_PICO(nflux,      .alarmed = true),
+    EXPORT_PICO(flux,           .alarmed = true),
+    EXPORT_PICO(nflux,          .alarmed = true),
     EXPORT_PICO(time),
-    EXPORT_PICO(max_bin,    .alarmed = true),
+    EXPORT_PICO(max_bin,        .alarmed = true),
     EXPORT_PICO(shift),
     EXPORT_PICO(sample_width),
     EXPORT_PICO(count_rate_0),
@@ -90,13 +70,15 @@ static struct struct_info picoStructInfo[] = {
 
     /* Controllable parameters.  If any of these are written then all parameters
      * will be reloaded. */
-    EXPORT_PICO(Offset,     .notify = true),
-    EXPORT_PICO(CFDZeroX0,  .notify = true),
-    EXPORT_PICO(CFDZeroX1,  .notify = true),
-    EXPORT_PICO(CFDLevel0,  .notify = true),
-    EXPORT_PICO(CFDLevel1,  .notify = true),
-    EXPORT_PICO(SyncDiv,    .notify = true),
-    EXPORT_PICO(Range,      .notify = true),
+    EXPORT_PICO(Offset,         .notify = true),
+    EXPORT_PICO(CFDZeroX0,      .notify = true),
+    EXPORT_PICO(CFDZeroX1,      .notify = true),
+    EXPORT_PICO(CFDLevel0,      .notify = true),
+    EXPORT_PICO(CFDLevel1,      .notify = true),
+    EXPORT_PICO(SyncDiv,        .notify = true),
+    EXPORT_PICO(Range,          .notify = true),
+
+    EXPORT_PICO(deadtime),
 
     EXPORT_ARRAY_END
 };
@@ -110,7 +92,8 @@ struct pico_pvt
 
     char *port;
     char *serial;
-    int event;
+    int event_fast;     // Event for single shot update
+    int event_5s;       // Event for 5 second update
     int alarm;
 
     char alarm_string[ERRBUF];
@@ -223,8 +206,21 @@ static asynDrvUser asynDrvUserImpl = {
 };
 static asynOctet asynOctetImpl = { .read = oct_read };
 
-/* I/O and calculation thread */
 
+/* Checks whether 5 seconds have passed since the last time things were
+ * processed and updates *last_tick accordingly. */
+static bool check_5s(time_t *last_tick)
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    bool process = now.tv_sec >= *last_tick + 5;
+    if (process)
+        *last_tick = 5 * (now.tv_sec / 5);
+    return process;
+}
+
+
+/* I/O and calculation thread */
 static void picoThreadFunc(void *pvt)
 {
     struct pico_pvt *pico = pvt;
@@ -242,6 +238,7 @@ static void picoThreadFunc(void *pvt)
     epicsMutexUnlock(pico->lock);
 
     bool first = true;
+    time_t last_tick = 0;
     while (true)
     {
         /* acquire the data (usually 5s) */
@@ -253,7 +250,7 @@ static void picoThreadFunc(void *pvt)
         snprintf(pico->data.errstr, ERRBUF, "%s", PICO_NO_ERROR);
         pico_measure(&pico->data, pico_time);
 
-        /* do the averaging */
+        /* Process the data. */
 
         epicsMutexMustLock(pico->lock);
 
@@ -268,7 +265,12 @@ static void picoThreadFunc(void *pvt)
             pico->alarm = 0;
         else
             pico->alarm = 1;
-        pico_average(&pico->data);
+
+        bool process_5s = check_5s(&last_tick);
+
+        pico_process_fast(&pico->data);
+        if (process_5s)
+            pico_process_5s(&pico->data);
 
         epicsMutexUnlock(pico->lock);
 
@@ -277,9 +279,11 @@ static void picoThreadFunc(void *pvt)
             epicsEventSignal(pico->started);
             first = false;
         }
-        /* events are trivial, I/O interrupts are tedious */
 
-        post_event(pico->event);
+        /* events are trivial, I/O interrupts are tedious */
+        post_event(pico->event_fast);
+        if (process_5s)
+            post_event(pico->event_5s);
 
         if(pico->alarm)
             /* backoff in case of failure */
@@ -290,9 +294,7 @@ static void picoThreadFunc(void *pvt)
 /* port creation */
 
 static int initPicoAsyn(
-    const char *port, const char *serial,
-    int event, int Offset, int CFDLevel0, int CFDLevel1,
-    int CFDZeroX0, int CFDZeroX1, int SyncDiv, int Range)
+    const char *port, const char *serial, int event_fast, int event_5s)
 {
     printf("initPicoAsyn('%s')\n", port);
 
@@ -303,15 +305,17 @@ static int initPicoAsyn(
     pico->serial = epicsStrDup(serial);
     pico->lock = epicsMutexMustCreate();
     pico->started = epicsEventMustCreate(epicsEventEmpty);
-    pico->event = event;
+    pico->event_fast = event_fast;
+    pico->event_5s = event_5s;
 
-    pico->data.Offset = Offset;
-    pico->data.CFDLevel0 = CFDLevel0;
-    pico->data.CFDLevel1 = CFDLevel1;
-    pico->data.CFDZeroX0 = CFDZeroX0;
-    pico->data.CFDZeroX1 = CFDZeroX1;
-    pico->data.SyncDiv = SyncDiv;
-    pico->data.Range = Range;
+    // Hard-wired defaults to be overwritten by autosave/restore
+    pico->data.Offset = 0;
+    pico->data.CFDLevel0 = 300;
+    pico->data.CFDLevel1 = 100;
+    pico->data.CFDZeroX0 = 10;
+    pico->data.CFDZeroX1 = 5;
+    pico->data.SyncDiv = 1;
+    pico->data.Range = 3;
 
     DECLARE_INTERFACE(pico, Common, asynCommonImpl, pico);
     DECLARE_INTERFACE(pico, DrvUser, asynDrvUserImpl, pico->info);
@@ -349,29 +353,19 @@ static int initPicoAsyn(
 /* IOC shell commands */
 
 static const iocshFuncDef initFuncDef = {
-    "initPicoAsyn", 10, (const iocshArg *[]) {
+    "initPicoAsyn", 4, (const iocshArg *[]) {
         &(iocshArg) { "Port name",  iocshArgString },
         &(iocshArg) { "Serial ID",  iocshArgString },
-        &(iocshArg) { "Event",      iocshArgInt },
-        &(iocshArg) { "Offset",     iocshArgInt },
-        &(iocshArg) { "CFDLevel0",  iocshArgInt },
-        &(iocshArg) { "CFDLevel1",  iocshArgInt },
-        &(iocshArg) { "CFDZeroX0",  iocshArgInt },
-        &(iocshArg) { "CFDZeroX1",  iocshArgInt },
-        &(iocshArg) { "SyncDiv",    iocshArgInt },
-        &(iocshArg) { "Range",      iocshArgInt },
+        &(iocshArg) { "Event Fast", iocshArgInt },
+        &(iocshArg) { "Event 5s",   iocshArgInt },
     }
 };
 
-static const iocshFuncDef scanFuncDef = {
-    "scanPicoDevices", 0, NULL };
+static const iocshFuncDef scanFuncDef = { "scanPicoDevices", 0, NULL };
 
 static void initCallFunc(const iocshArgBuf * args)
 {
-    initPicoAsyn(
-        args[0].sval, args[1].sval, args[2].ival, args[3].ival,
-        args[4].ival, args[5].ival, args[6].ival, args[7].ival,
-        args[8].ival, args[9].ival);
+    initPicoAsyn(args[0].sval, args[1].sval, args[2].ival, args[3].ival);
 }
 
 static void scanCallFunc(const iocshArgBuf *args)
