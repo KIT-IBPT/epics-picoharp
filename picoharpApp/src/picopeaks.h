@@ -49,6 +49,9 @@ struct pico_data
     double count_rate_1;
     double resolution;          // Bin width in ps
 
+    char errstr[ERRBUF];
+    char reset_time[ERRBUF];
+
 
     /**************************************************************************/
     /* Configuration settings programmable through EPICS. */
@@ -70,7 +73,7 @@ struct pico_data
 
 
     /**************************************************************************/
-    /* Machine state readbacks (delivered through EPICS). */
+    /* Synchrotron state readbacks (delivered through EPICS). */
 
     double freq;                // master oscillator (Hz)
     double charge;              // DCCT charge (nC)
@@ -87,7 +90,6 @@ struct pico_data
     /* PicoHarp acquisition results */
     int overflow;
     unsigned int countsbuffer[HISTCHAN];
-    char errstr[ERRBUF];
 
 
     int index60;

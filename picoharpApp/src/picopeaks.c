@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
 
 #include <phlib.h>
 #include <phdefin.h>
@@ -126,12 +127,30 @@ static double sum_peaks(
 }
 
 
+static double compute_pileup(
+    struct pico_data *self, const double samples[], int bucket)
+{
+    int length = (int) self->deadtime;
+    int shift = (int) self->shift;
+    bucket = (bucket + shift) % BUCKETS;
+    int start_bucket = (bucket + BUCKETS - length) % BUCKETS;
+    int start = bucket_start[start_bucket];
+    int end = bucket_start[bucket];
+
+    double pileup = 0;
+    for (int i = start; i != end; i = (i + 1) % VALID_SAMPLES)
+        pileup += samples[i];
+    return pileup;
+}
+
+
 /* Apply pileup correction to bucket charges and convert bucket fill into
  * charge. */
 static void correct_peaks(
     struct pico_data *self,
-    int length, double turns, const double raw_buckets[], double fixup[],
-    double *max_fixup, double buckets[])
+    int length, double turns,
+    const double samples[], const double raw_buckets[],
+    double fixup[], double *max_fixup, double buckets[])
 {
     *max_fixup = 0;
     double total_counts = 0;
@@ -139,9 +158,7 @@ static void correct_peaks(
     {
         /* Compute pileup factor by counting number of observed events preceding
          * this one.  We convert counts into counts per turn. */
-        double sum = 0;
-        for (int j = 1; j <= length; j ++)
-            sum += raw_buckets[(i + BUCKETS - j) % BUCKETS];
+        double sum = compute_pileup(self, samples, i);
 
         /* Compute pileup correction. */
         fixup[i] = 1 / (1 - sum);
@@ -243,7 +260,7 @@ static void process_pico_peaks(
 
     correct_peaks(
         self, (int) self->deadtime,
-        turns, raw_buckets, fixup, max_fixup, buckets);
+        turns, samples, raw_buckets, fixup, max_fixup, buckets);
 
     *socs = 0;
     for (int k = 0; k < BUCKETS; ++k)
@@ -323,6 +340,18 @@ void pico_process_fast(struct pico_data *self)
     PROCESS_PICO_PEAKS(self, fast);
 }
 
+static void reset_accum(struct pico_data *self)
+{
+    memset(self->bufferall, 0, sizeof(self->samples_all));
+    self->turns_all = 0;
+    self->total_count_all = 0;
+    self->reset_accum = 0;
+
+    time_t now = time(NULL);
+    struct tm tm;
+    localtime_r(&now, &tm);
+    strftime(self->reset_time, ERRBUF, "%Y-%m-%d %H:%M:%S %z", &tm);
+}
 
 void pico_process_5s(struct pico_data *self)
 {
@@ -331,12 +360,7 @@ void pico_process_5s(struct pico_data *self)
     self->total_count_5 = self->count_buffer5;
 
     if (self->reset_accum != 0)
-    {
-        memset(self->bufferall, 0, sizeof(self->samples_all));
-        self->turns_all = 0;
-        self->total_count_all = 0;
-        self->reset_accum = 0;
-    }
+        reset_accum(self);
 
     /* Accumulate intermediate buffers. */
     ACCUM_BUFFER(self, 60);
@@ -395,7 +419,7 @@ static bool pico_set_config(struct pico_data *self)
 
 
 /* Captures data from instrument, does not process captured data. */
-bool pico_measure(struct pico_data *self, int time)
+bool pico_measure(struct pico_data *self, int delay)
 {
     if (self->parameter_updated)
     {
@@ -406,8 +430,8 @@ bool pico_measure(struct pico_data *self, int time)
     self->overflow = 0;
 
     PICO_CHECK(PH_ClearHistMem(self->device, BLOCK));
-    PICO_CHECK(PH_StartMeas(self->device, time));
-    self->current_time = time;
+    PICO_CHECK(PH_StartMeas(self->device, delay));
+    self->current_time = delay;
 
     while (true)
     {
@@ -466,6 +490,7 @@ bool pico_init(struct pico_data *self, const char *serial)
     self->freq = 499652713;
     self->charge = 0;
     self->time = 5000;
+    self->reset_accum = 1;
     self->device = find_pico_device(serial);
     if (self->device < 0)
         return false;

@@ -66,6 +66,9 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(count_rate_1),
     EXPORT_PICO(resolution),
 
+    EXPORT_PICO(errstr),
+    EXPORT_PICO(reset_time),
+
     /* Controllable parameters. */
 
     EXPORT_PICO(Offset,         .notify = true),
@@ -104,8 +107,6 @@ struct pico_pvt
     int event_fast;     // Event for single shot update
     int event_5s;       // Event for 5 second update
     int alarm;
-
-    char alarm_string[ERRBUF];
 
     asynInterface Common;
     asynInterface DrvUser;
@@ -183,12 +184,19 @@ static asynStatus pico_read_adapter(
 }
 
 static asynStatus oct_read(
-    void *drvPvt, asynUser *pasynUser, char *data,
+    void *drvPvt, asynUser *pasynUser, char *value,
     size_t numchars, size_t *nbytesTransferred, int *eomReason)
 {
     struct pico_pvt *pico = drvPvt;
+    struct pico_data *data = &pico->data;
+    int field = pasynUser->reason;
+    if (field < 0)
+        return asynError;
+    const struct struct_info *info = &pico->info[field];
+
     epicsMutexLock(pico->lock);
-    snprintf(data, numchars, "%s", pico->alarm_string);
+    snprintf(value, numchars, "%s", MEMBER_LOOKUP(data, info));
+
     *nbytesTransferred = numchars;
     *eomReason = 0;
     epicsMutexUnlock(pico->lock);
@@ -263,14 +271,12 @@ static void picoThreadFunc(void *pvt)
 
         epicsMutexMustLock(pico->lock);
 
-        strcpy(pico->alarm_string, pico->data.errstr);
-
         /* check DCCT alarm state */
         if(pico->data.dcct_alarm)
-            snprintf(pico->alarm_string, ERRBUF, "%s", PICO_DCCT_ERROR);
+            snprintf(pico->data.errstr, ERRBUF, "%s", PICO_DCCT_ERROR);
 
         /* check for PicoHarp errors */
-        if (strcmp(pico->alarm_string, PICO_NO_ERROR) == 0)
+        if (strcmp(pico->data.errstr, PICO_NO_ERROR) == 0)
             pico->alarm = 0;
         else
             pico->alarm = 1;

@@ -48,9 +48,18 @@ record(ai, "$(DEVICE):RESOLUTION") {
 record(stringin, "$(DEVICE):ERROR") {
   field(SCAN, "1 second")
   field(DTYP, "asynOctetRead")
-  field(INP,  "@asyn($(PORT))")
+  field(INP,  "@asyn($(PORT))errstr")
   field(DESC, "Picoharp error string")
 }
+
+record(stringin, "$(DEVICE):RESET_TIME") {
+  field(DTYP, "asynOctetRead")
+  field(INP,  "@asyn($(PORT))reset_time")
+  field(DESC, "Time long term history last reset")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT_5S)")
+}
+
 
 
 # Environmental readbacks
