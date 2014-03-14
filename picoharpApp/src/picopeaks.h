@@ -7,7 +7,6 @@
 
 #define ERRBUF 1024
 #define BUCKETS 936
-#define LOG_PLOT_OFFSET 1e-8
 #define VALID_SAMPLES 58540
 #define SAMPLES_PER_PROFILE 62  /* floor(VALID_SAMPLES/BUCKETS) */
 #define BUFFERS_60 12
@@ -97,9 +96,13 @@ struct pico_data
     double buffer5[HISTCHAN];
     double buffer60[BUFFERS_60][HISTCHAN];
     double buffer180[BUFFERS_180][HISTCHAN];
+    double bufferall[HISTCHAN];
     double turns_buffer5;
     double turns_buffer60[BUFFERS_60];
     double turns_buffer180[BUFFERS_180];
+    double count_buffer5;
+    double count_buffer60[BUFFERS_60];
+    double count_buffer180[BUFFERS_180];
 };
 
 /* Called to initialise connection to picoharp with given serial number, returns
