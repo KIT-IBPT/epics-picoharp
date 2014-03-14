@@ -1,67 +1,6 @@
 alias("$(DEVICE):BUCKETS_5", "$(DEVICE):BUCKETS")
+alias("$(DEVICE):FLUX_5", "$(DEVICE):FLUX")
 
-
-record(waveform, "$(DEVICE):PROFILE") {
-  field(DTYP, "asynFloat64ArrayIn")
-  field(INP,  "@asyn($(PORT))profile")
-  field(FTVL, "DOUBLE")
-  field(NELM, "62")
-  field(DESC, "Bucket profile")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT_FAST)")
-}
-
-record(ai, "$(DEVICE):PEAK") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))peak")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT_FAST)")
-  field(EGU,  "bins")
-  field(PREC, "0")
-  field(LOPR, "1")
-  field(HOPR, "63")
-  field(LOLO, "6")
-  field(LOW,  "12")
-  field(HIGH, "50")
-  field(HIHI, "57")
-  field(LLSV, "MAJOR")
-  field(LSV,  "MINOR")
-  field(HSV,  "MINOR")
-  field(HHSV, "MAJOR")
-  field(DESC, "Offset of first peak")
-}
-
-record(ai, "$(DEVICE):FLUX") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))flux")
-  field(EGU,  "count/turn")
-  field(PREC, "3")
-  field(DESC, "Counts observed per turn")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT_5S)")
-}
-
-record(ai, "$(DEVICE):NFLUX") {
-  field(DTYP, "asynFloat64")
-  field(INP,  "@asyn($(PORT))nflux")
-  field(EGU,  "count/turn/nC")
-  field(PREC, "1")
-  field(DESC, "Normalised counts observed per turn")
-  field(SCAN, "Event")
-  field(EVNT, "$(EVENT_5S)")
-}
-
-#% autosave 2 VAL
-record(ao, "$(DEVICE):TIME") {
-  field(PINI, "YES")
-  field(DTYP, "asynFloat64")
-  field(OUT,  "@asyn($(PORT))time")
-  field(EGU,  "ms")
-  field(PREC, "0")
-  field(LOPR, "1")
-  field(HOPR, "60000")
-  field(DESC, "Acquisition time")
-}
 
 record(ai, "$(DEVICE):MAX_BIN") {
   field(DTYP, "asynFloat64")
@@ -74,30 +13,6 @@ record(ai, "$(DEVICE):MAX_BIN") {
   field(DESC, "Maximum bin count")
   field(SCAN, "Event")
   field(EVNT, "$(EVENT_FAST)")
-}
-
-#% autosave 2 VAL
-record(ao, "$(DEVICE):SHIFT") {
-  field(PINI, "YES")
-  field(DTYP, "asynFloat64")
-  field(OUT,  "@asyn($(PORT))shift")
-  field(EGU,  "bucket")
-  field(PREC, "0")
-  field(LOPR, "0")
-  field(HOPR, "935")
-  field(DESC, "Circular Shift")
-}
-
-#% autosave 2 VAL
-record(ao, "$(DEVICE):SAMPLE_WIDTH") {
-  field(PINI, "YES")
-  field(DTYP, "asynFloat64")
-  field(OUT,  "@asyn($(PORT))sample_width")
-  field(EGU,  "bins")
-  field(PREC, "0")
-  field(LOPR, "1")
-  field(HOPR, "62")
-  field(DESC, "Sample width")
 }
 
 record(ai, "$(DEVICE):COUNT_RATE_0") {
@@ -130,6 +45,16 @@ record(ai, "$(DEVICE):RESOLUTION") {
   field(EVNT, "$(EVENT_FAST)")
 }
 
+record(stringin, "$(DEVICE):ERROR") {
+  field(SCAN, "1 second")
+  field(DTYP, "asynOctetRead")
+  field(INP,  "@asyn($(PORT))")
+  field(DESC, "Picoharp error string")
+}
+
+
+# Environmental readbacks
+
 record(ao, "$(DEVICE):DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn($(PORT))charge")
@@ -155,11 +80,40 @@ record(ao, "$(DEVICE):FREQ") {
   field(DESC, "Master oscillator frequency")
 }
 
-record(stringin, "$(DEVICE):ERROR") {
-  field(SCAN, "1 second")
-  field(DTYP, "asynOctetRead")
-  field(INP,  "@asyn($(PORT))")
-  field(DESC, "Picoharp error string")
+#% autosave 2 VAL
+record(ao, "$(DEVICE):TIME") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))time")
+  field(EGU,  "ms")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "60000")
+  field(DESC, "Acquisition time")
+}
+
+#% autosave 2 VAL
+record(ao, "$(DEVICE):SHIFT") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))shift")
+  field(EGU,  "bucket")
+  field(PREC, "0")
+  field(LOPR, "0")
+  field(HOPR, "935")
+  field(DESC, "Circular Shift")
+}
+
+#% autosave 2 VAL
+record(ao, "$(DEVICE):SAMPLE_WIDTH") {
+  field(PINI, "YES")
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))sample_width")
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "62")
+  field(DESC, "Sample width")
 }
 
 
@@ -257,4 +211,11 @@ record(ao, "$(DEVICE):DEADTIME") {
   field(LOPR, "0")
   field(HOPR, "936")
   field(DESC, "Detector dead time")
+}
+
+#% autosave 2 VAL
+record(ao, "$(DEVICE):RESET_ACCUM") {
+  field(DTYP, "asynFloat64")
+  field(OUT,  "@asyn($(PORT))reset_accum")
+  field(DESC, "Reset long term waveform")
 }

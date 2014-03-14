@@ -97,11 +97,12 @@ static int find_pico_device(const char *serial)
 
 /* Accumulates raw samples into bins and returns total sum. */
 static double sum_peaks(
-    struct pico_data *self, int shift, const double samples[], double bins[])
+    struct pico_data *self,
+    int peak, int shift, const double samples[], double bins[])
 {
     /* Compute accumulation window from programmed sample width and discovered
      * peak, but ensure window fits entirely within a single bin. */
-    int start_offset = (int) self->peak - (int) self->sample_width / 2;
+    int start_offset = peak - (int) self->sample_width / 2;
     int end_offset = start_offset + (int) self->sample_width;
     if (start_offset < 0)
         start_offset = 0;
@@ -137,7 +138,7 @@ static void correct_peaks(
         /* Compute pileup factor by counting number of observed events preceding
          * this one.  We convert counts into counts per turn. */
         double sum = 0;
-        for (int j = 0; j < length; j ++)
+        for (int j = 1; j <= length; j ++)
             sum += raw_buckets[(i + BUCKETS - j) % BUCKETS];
         double sum_turn = sum / turns;
 
@@ -163,30 +164,6 @@ static void correct_peaks(
         else
             buckets[i] = 0;
 }
-
-
-static void process_pico_peaks(
-    struct pico_data *self, double turns, const double samples[],
-    double raw_buckets[], double fixup[], double *max_fixup,
-    double buckets[], double *socs)
-{
-    sum_peaks(self, (int) self->shift, samples, raw_buckets);
-
-    correct_peaks(
-        self, (int) self->deadtime,
-        turns, raw_buckets, fixup, max_fixup, buckets);
-
-    *socs = 0;
-    for (int k = 0; k < BUCKETS; ++k)
-        *socs += buckets[k] * buckets[k];
-}
-
-#define PROCESS_PICO_PEAKS(self, period) \
-    process_pico_peaks(self, \
-        self->turns_##period, self->samples_##period, \
-        self->raw_buckets_##period, \
-        self->fixup_##period, &self->max_fixup_##period, \
-        self->buckets_##period, &self->socs_##period)
 
 
 /* Compute profile by folding all buckets together. */
@@ -229,17 +206,19 @@ static double compute_max_bin(const double samples[])
 }
 
 /* Updates flux. */
-static void compute_flux(struct pico_data *self)
+static void compute_flux(
+    struct pico_data *self, const double samples[], double turns,
+    double *total_count, double *flux, double *nflux)
 {
-    double counts_fill = 0.0;
+    *total_count = 0;
     for (int n = 0; n < HISTCHAN; ++n)
-        counts_fill += self->samples_5[n];
-    self->flux = counts_fill / self->turns_5;
+        *total_count += samples[n];
+    *flux = *total_count / turns;
 
     if (self->charge > 0.001)
-        self->nflux = self->flux / self->charge;
+        *nflux = *flux / self->charge;
     else
-        self->nflux = 0;
+        *nflux = 0;
 }
 
 
@@ -270,17 +249,51 @@ static void accum_buffer(
         self->turns_buffer##count, &self->turns_##count)
 
 
+/* The monstrous list of parameters in this function should really be gathered
+ * into one or more structures, but the current architecture makes this
+ * exceptionally messy to do. */
+static void process_pico_peaks(
+    struct pico_data *self, double turns, const double samples[],
+    double raw_buckets[], double fixup[], double *max_fixup,
+    double buckets[], double *socs, double profile[], double *peak,
+    double *flux, double *nflux, double *total_count)
+{
+    compute_flux(self, samples, turns, total_count, flux, nflux);
+
+    compute_profile(samples, profile);
+    *peak = compute_peak(profile);
+
+    sum_peaks(self, (int) *peak, (int) self->shift, samples, raw_buckets);
+
+    correct_peaks(
+        self, (int) self->deadtime,
+        turns, raw_buckets, fixup, max_fixup, buckets);
+
+    *socs = 0;
+    for (int k = 0; k < BUCKETS; ++k)
+        *socs += buckets[k] * buckets[k];
+}
+
+#define PROCESS_PICO_PEAKS(self, period) \
+    process_pico_peaks(self, \
+        self->turns_##period, self->samples_##period, \
+        self->raw_buckets_##period, \
+        self->fixup_##period, &self->max_fixup_##period, \
+        self->buckets_##period, &self->socs_##period, \
+        self->profile_##period, &self->peak_##period, \
+        &self->flux_##period, &self->nflux_##period, \
+        &self->total_count_##period)
+
+
 void pico_process_fast(struct pico_data *self)
 {
     /* Capture raw data and convert into common format. */
     for (int n = 0; n < HISTCHAN; n ++)
         self->samples_fast[n] = self->countsbuffer[n];
 
-    compute_profile(self->samples_fast, self->profile);
-    self->peak = compute_peak(self->profile);
     self->max_bin = compute_max_bin(self->samples_fast);
-
     self->turns_fast = 1e-3 * self->current_time * self->freq / BUCKETS;
+
     PROCESS_PICO_PEAKS(self, fast);
 
     /* Accumulate fast buffer into 5 second buffer. */
@@ -295,6 +308,13 @@ void pico_process_5s(struct pico_data *self)
     memcpy(self->samples_5, self->buffer5, sizeof(self->samples_5));
     self->turns_5 = self->turns_buffer5;
 
+    if (self->reset_accum != 0)
+    {
+        memset(self->samples_all, 0, sizeof(self->samples_all));
+        self->turns_all = 0;
+        self->reset_accum = 0;
+    }
+
     /* Accumulate intermediate buffers. */
     ACCUM_BUFFER(self, 60);
     ACCUM_BUFFER(self, 180);
@@ -302,8 +322,6 @@ void pico_process_5s(struct pico_data *self)
     for (int i = 0; i < HISTCHAN; i ++)
         self->samples_all[i] += self->samples_5[i];
     self->turns_all += self->turns_5;
-
-    compute_flux(self);
 
     /* Process everything. */
     PROCESS_PICO_PEAKS(self, 5);
@@ -407,7 +425,6 @@ bool pico_init(struct pico_data *self, const char *serial)
         bucket_start[i] = (int) round((float) i * VALID_SAMPLES / BUCKETS);
 
     /* initialize defaults */
-    self->peak = 45;
     self->sample_width = 10;
     self->shift = 652;
     self->socs_5 = 0;

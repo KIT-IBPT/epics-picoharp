@@ -45,6 +45,8 @@
     EXPORT_PICO(name##_all, extra)
 
 static struct struct_info picoStructInfo[] = {
+    /* Readout values */
+
     EXPORT_RANGE(samples,       .alarmed = true),
     EXPORT_RANGE(raw_buckets,   .alarmed = true),
     EXPORT_RANGE(fixup,         .alarmed = true),
@@ -53,23 +55,19 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_RANGE(socs,          .alarmed = true),
     EXPORT_RANGE(turns,         .alarmed = true),
 
-    EXPORT_PICO(profile,        .alarmed = true),
-    EXPORT_PICO(peak),
-    EXPORT_PICO(flux,           .alarmed = true),
-    EXPORT_PICO(nflux,          .alarmed = true),
-    EXPORT_PICO(time),
+    EXPORT_RANGE(profile),
+    EXPORT_RANGE(peak),
+    EXPORT_RANGE(flux),
+    EXPORT_RANGE(nflux),
+    EXPORT_RANGE(total_count),
+
     EXPORT_PICO(max_bin,        .alarmed = true),
-    EXPORT_PICO(shift),
-    EXPORT_PICO(sample_width),
     EXPORT_PICO(count_rate_0),
     EXPORT_PICO(count_rate_1),
-    EXPORT_PICO(freq),
-    EXPORT_PICO(dcct_alarm),
-    EXPORT_PICO(charge),
     EXPORT_PICO(resolution),
 
-    /* Controllable parameters.  If any of these are written then all parameters
-     * will be reloaded. */
+    /* Controllable parameters. */
+
     EXPORT_PICO(Offset,         .notify = true),
     EXPORT_PICO(CFDZeroX0,      .notify = true),
     EXPORT_PICO(CFDZeroX1,      .notify = true),
@@ -78,7 +76,18 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(SyncDiv,        .notify = true),
     EXPORT_PICO(Range,          .notify = true),
 
+    EXPORT_PICO(time),
+    EXPORT_PICO(shift),
+    EXPORT_PICO(sample_width),
     EXPORT_PICO(deadtime),
+    EXPORT_PICO(reset_accum),
+
+    /* Environmental readbacks. */
+
+    EXPORT_PICO(freq),
+    EXPORT_PICO(dcct_alarm),
+    EXPORT_PICO(charge),
+
 
     EXPORT_ARRAY_END
 };

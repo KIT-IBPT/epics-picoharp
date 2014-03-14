@@ -26,39 +26,35 @@ struct pico_data
 {
     int device;     /* Device ID used when talking to picoharp. */
 
-    /* EPICS */
+    /**************************************************************************/
+    /* Values published through EPICS. */
 
-    /* These variables belong in a structure.  Unfortunately given the history
-     * of this project doing this will take more time than we have. */
-
+    /* These variables belong in one or more structures.  Unfortunately given
+     * the history of this project doing this will take too long to do. */
     DECLARE_RANGE(samples,      [HISTCHAN]);    // Raw samples from picoharp
     DECLARE_RANGE(raw_buckets,  [BUCKETS]);     // Uncorrected fill patter
     DECLARE_RANGE(fixup,        [BUCKETS]);     // Correction factor
     DECLARE_RANGE(max_fixup);                   // Maximum correction factor
     DECLARE_RANGE(buckets,      [BUCKETS]);     // Corrected fill pattern
-    DECLARE_RANGE(socs);                        // Sum of Charge Squared
-    DECLARE_RANGE(turns);                       // Turn count for capture
+    DECLARE_RANGE(socs);        // Sum of Charge Squared
+    DECLARE_RANGE(turns);       // Turn count for capture
 
+    DECLARE_RANGE(profile, [SAMPLES_PER_PROFILE]);  // Single bunch profile
+    DECLARE_RANGE(peak);        // Position of profile peak
+    DECLARE_RANGE(flux);        // Counts per turn
+    DECLARE_RANGE(nflux);       // Counts per turn per nC
+    DECLARE_RANGE(total_count); // Total counts captured (= flux * turns)
 
-    double profile[SAMPLES_PER_PROFILE];
-    double peak;
-    double flux;
-    double nflux;
-    double time;
-    double max_bin;
-    double shift;
-    double sample_width;
-    double count_rate_0;    // Channel count rates
+    double max_bin;             // Maximum count in one bin
+    double count_rate_0;        // Channel count rates
     double count_rate_1;
-    double resolution;
+    double resolution;          // Bin width in ps
 
-    double freq; /* master oscillator (Hz)*/
-    double charge; /* DCCT charge (nC) */
-    double dcct_alarm; /* DCCT monitor alarm status (!) */
 
-    int current_time;           // Time used for current capture
+    /**************************************************************************/
+    /* Configuration settings programmable through EPICS. */
 
-    /* PicoHarp sampling parameters (st.cmd) */
+    /* PicoHarp sampling parameters */
     double Offset;
     double CFDLevel0;
     double CFDZeroX0;
@@ -67,10 +63,27 @@ struct pico_data
     double SyncDiv;
     double Range;
 
+    double time;                // Sample time in ms for picoharp
+    double shift;               // Pattern shift
+    double sample_width;        // Number of points to measure for bins
     double deadtime;            // Detector deadtime for correction
+    double reset_accum;         // If set to 1 then accumulator will be reset
+
+
+    /**************************************************************************/
+    /* Machine state readbacks (delivered through EPICS). */
+
+    double freq;                // master oscillator (Hz)
+    double charge;              // DCCT charge (nC)
+    double dcct_alarm;          // DCCT monitor alarm status (!)
+
+
+    /**************************************************************************/
+    /* Internal variables. */
+
+    int current_time;           // Time used for current capture
 
     bool parameter_updated;     // Set if parameters should be reloaded
-    double reset_accum;         // If set to 1 then accumulator will be reset
 
     /* PicoHarp acquisition results */
     int overflow;

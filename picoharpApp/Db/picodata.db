@@ -77,3 +77,63 @@ record(ai, "$(DEVICE):TURNS_$(SUFFIX)") {
   field(SCAN, "Event")
   field(EVNT, "$(EVENT)")
 }
+
+record(waveform, "$(DEVICE):PROFILE_$(SUFFIX)") {
+  field(DTYP, "asynFloat64ArrayIn")
+  field(INP,  "@asyn($(PORT))profile_$(ASUFFIX)")
+  field(FTVL, "DOUBLE")
+  field(NELM, "62")
+  field(DESC, "Bucket profile")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):PEAK_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))peak_$(ASUFFIX)")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+  field(EGU,  "bins")
+  field(PREC, "0")
+  field(LOPR, "1")
+  field(HOPR, "63")
+  field(LOLO, "6")
+  field(LOW,  "12")
+  field(HIGH, "50")
+  field(HIHI, "57")
+  field(LLSV, "MAJOR")
+  field(LSV,  "MINOR")
+  field(HSV,  "MINOR")
+  field(HHSV, "MAJOR")
+  field(DESC, "Offset of first peak")
+}
+
+record(ai, "$(DEVICE):FLUX_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))flux_$(ASUFFIX)")
+  field(EGU,  "count/turn")
+  field(PREC, "3")
+  field(DESC, "Counts observed per turn")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):NFLUX_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))nflux_$(ASUFFIX)")
+  field(EGU,  "count/turn/nC")
+  field(PREC, "1")
+  field(DESC, "Normalised counts observed per turn")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
+
+record(ai, "$(DEVICE):TOTAL_COUNT_$(SUFFIX)") {
+  field(DTYP, "asynFloat64")
+  field(INP,  "@asyn($(PORT))total_count_$(ASUFFIX)")
+  field(EGU,  "count")
+  field(PREC, "0")
+  field(DESC, "Total number of counts observed")
+  field(SCAN, "Event")
+  field(EVNT, "$(EVENT)")
+}
