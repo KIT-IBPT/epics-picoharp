@@ -67,7 +67,7 @@ record(stringin, "$(DEVICE):RESET_TIME") {
 record(ao, "$(DEVICE):DCCT") {
   field(DTYP, "asynFloat64")
   field(OUT,  "@asyn($(PORT))charge")
-  field(DOL,  "SR21C-DI-DCCT-01:CHARGE CP MS")
+  field(DOL,  "SR23C-DI-DCCT-01:CHARGE CP MS")
   field(OMSL, "closed_loop")
   field(DESC, "DCCT charge")
 }
