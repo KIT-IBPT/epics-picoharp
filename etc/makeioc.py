@@ -7,7 +7,7 @@ import iocbuilder
 iocbuilder.ConfigureIOC(architecture = 'linux-x86_64')
 from iocbuilder import ModuleVersion
 
-ModuleVersion('asyn',      '4-22')
+ModuleVersion('asyn',      '4-21')
 ModuleVersion('picoharp',  home = '..', use_name = False)
 
 from iocbuilder.modules import picoharp

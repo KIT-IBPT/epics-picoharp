@@ -6,6 +6,6 @@ SUPPORT = /dls_sw/prod/R3.14.12.3/support
 
 EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
-ASYN = $(SUPPORT)/asyn/4-22
+ASYN = $(SUPPORT)/asyn/4-21
 
 -include $(TOP)/configure/RELEASE.private
