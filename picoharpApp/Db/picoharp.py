@@ -32,16 +32,16 @@ aIn('MAX_BIN', EGU = 'counts',
 aIn('COUNT_RATE_0', EGU = 'Hz', DESC = 'Master clock count rate')
 aIn('COUNT_RATE_1', EGU = 'Hz', DESC = 'Sample data count rate')
 aIn('RESOLUTION',  EGU = 'ps', DESC = 'Histogram bin width')
-support.stringIn('ERROR', address = 'errstr',
+support.stringIn('ERROR',
     SCAN = '1 second', DESC = 'Picoharp error string')
 
 stringIn('RESET_TIME',
     EVNT = EVENT_5S, DESC = "Time long term history last reset")
 
-dcct = aOut('DCCT', address = 'charge',
+dcct = aOut('CHARGE',
     DOL = CP(MS(ImportRecord(CHARGE))),
-    OMSL = 'closed_loop', DESC = 'DCCT charge')
-aOut('DCCT:ALARM', address = 'dcct_alarm',
+    OMSL = 'closed_loop', DESC = 'DCCT charge readback')
+aOut('DCCT_ALARM',
     DOL = dcct.SEVR, OMSL = 'closed_loop', SCAN = '.1 second',
     DESC = 'DCCT alarm status')
 dcct = aOut('FREQ',
@@ -60,19 +60,19 @@ config('SHIFT',
     EGU = 'bucket', LOPR = 0, HOPR = 935, DESC = 'Circular Shift')
 config('SAMPLE_WIDTH',
     EGU = 'bins', LOPR = 1, HOPR = 62, DESC = 'Sample width')
-config('OFFSET', address = 'Offset',
+config('OFFSET',
     EGU = 'ps', HOPR = 1000000000, DESC = 'Offset in picoseconds')
-config('CFDZEROX0', address = 'CFDZeroX0',
+config('CFDZEROX0',
     EGU = 'mV', HOPR = 20, DESC = 'Clock zero cross level')
-config('CFDZEROX1', address = 'CFDZeroX1',
+config('CFDZEROX1',
     EGU = 'mV', HOPR = 20, DESC = 'Data zero cross level')
-config('CFDLEVEL0', address = 'CFDLevel0',
+config('CFDLEVEL0',
     EGU = 'mV', HOPR = 800, DESC = 'Clock discriminator level')
-config('CFDLEVEL1', address = 'CFDLevel1',
+config('CFDLEVEL1',
     EGU = 'mV', HOPR = 800, DESC = 'Data discriminator level')
-config('SYNCDIV', address = 'SyncDiv',
+config('SYNCDIV',
     HOPR = 8, DESC = 'Input rate divider')
-config('RANGE', address = 'Range',
+config('RANGE',
     HOPR = 7, DESC = 'Measurement range code')
 config('DEADTIME',
     HOPR = 936, DESC = 'Detector dead time')

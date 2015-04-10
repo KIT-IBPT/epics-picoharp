@@ -27,7 +27,7 @@ static int bucket_start[BUCKETS];
         { \
             char __errstr[ERRBUF]; \
             PH_GetErrorString(__errstr, __status); \
-            sprintf(self->errstr, "%s", __errstr); \
+            sprintf(self->error, "%s", __errstr); \
             printf(#call " %s\n", __errstr); \
             return false; \
         } \
@@ -395,22 +395,22 @@ void pico_process_5s(struct pico_data *self)
 static bool pico_set_config(struct pico_data *self)
 {
     printf("Setting PicoHarp Configuration:\n");
-    printf("Offset    %g\n", self->Offset);
-    printf("CFDLevel0 %g\n", self->CFDLevel0);
-    printf("CFDLevel1 %g\n", self->CFDLevel1);
-    printf("CFDZeroX0 %g\n", self->CFDZeroX0);
-    printf("CFDZeroX1 %g\n", self->CFDZeroX1);
-    printf("SyncDiv   %g\n", self->SyncDiv);
-    printf("Range     %g\n", self->Range);
+    printf("Offset    %g\n", self->offset);
+    printf("CFDLevel0 %g\n", self->cfdlevel0);
+    printf("CFDLevel1 %g\n", self->cfdlevel1);
+    printf("CFDZeroX0 %g\n", self->cfdzerox0);
+    printf("CFDZeroX1 %g\n", self->cfdzerox1);
+    printf("SyncDiv   %g\n", self->syncdiv);
+    printf("Range     %g\n", self->range);
 
-    PICO_CHECK(PH_SetSyncDiv(self->device, (int) self->SyncDiv));
+    PICO_CHECK(PH_SetSyncDiv(self->device, (int) self->syncdiv));
     PICO_CHECK(PH_SetInputCFD(
-        self->device, 0, (int) self->CFDLevel0, (int) self->CFDZeroX0));
+        self->device, 0, (int) self->cfdlevel0, (int) self->cfdzerox0));
     PICO_CHECK(PH_SetInputCFD(
-        self->device, 1, (int) self->CFDLevel1, (int) self->CFDZeroX1));
-    PICO_CHECK(PH_SetOffset(self->device, (int) self->Offset));
+        self->device, 1, (int) self->cfdlevel1, (int) self->cfdzerox1));
+    PICO_CHECK(PH_SetOffset(self->device, (int) self->offset));
     PICO_CHECK(PH_SetStopOverflow(self->device, 1, HISTCHAN-1));
-    PICO_CHECK(PH_SetBinning(self->device, (int) self->Range));
+    PICO_CHECK(PH_SetBinning(self->device, (int) self->range));
 
     PICO_CHECK(PH_GetResolution(self->device, &self->resolution));
 
@@ -505,13 +505,13 @@ static struct pico_data p;
 int main(void)
 {
     scanPicoDevices();
-    p.Offset = 0;
-    p.CFDLevel0 = 300;
-    p.CFDLevel1 = 20;
-    p.CFDZeroX0 = 10;
-    p.CFDZeroX1 = 11;
-    p.SyncDiv = 1;
-    p.Range = 3;
+    p.offset = 0;
+    p.cfdlevel0 = 300;
+    p.cfdlevel1 = 20;
+    p.cfdzerox0 = 10;
+    p.cfdzerox1 = 11;
+    p.syncdiv = 1;
+    p.range = 3;
 
     pico_init(&p);
     pico_measure(&p, 5000);

@@ -49,7 +49,7 @@ struct pico_data
     double count_rate_1;
     double resolution;          // Bin width in ps
 
-    char errstr[ERRBUF];
+    char error[ERRBUF];
     char reset_time[ERRBUF];
 
 
@@ -57,13 +57,13 @@ struct pico_data
     /* Configuration settings programmable through EPICS. */
 
     /* PicoHarp sampling parameters */
-    double Offset;
-    double CFDLevel0;
-    double CFDZeroX0;
-    double CFDZeroX1;
-    double CFDLevel1;
-    double SyncDiv;
-    double Range;
+    double offset;
+    double cfdlevel0;
+    double cfdzerox0;
+    double cfdzerox1;
+    double cfdlevel1;
+    double syncdiv;
+    double range;
 
     double time;                // Sample time in ms for picoharp
     double shift;               // Pattern shift

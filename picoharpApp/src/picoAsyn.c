@@ -66,18 +66,18 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_PICO(count_rate_1),
     EXPORT_PICO(resolution),
 
-    EXPORT_PICO(errstr),
+    EXPORT_PICO(error),
     EXPORT_PICO(reset_time),
 
     /* Controllable parameters. */
 
-    EXPORT_PICO(Offset,         .notify = true),
-    EXPORT_PICO(CFDZeroX0,      .notify = true),
-    EXPORT_PICO(CFDZeroX1,      .notify = true),
-    EXPORT_PICO(CFDLevel0,      .notify = true),
-    EXPORT_PICO(CFDLevel1,      .notify = true),
-    EXPORT_PICO(SyncDiv,        .notify = true),
-    EXPORT_PICO(Range,          .notify = true),
+    EXPORT_PICO(offset,         .notify = true),
+    EXPORT_PICO(cfdzerox0,      .notify = true),
+    EXPORT_PICO(cfdzerox1,      .notify = true),
+    EXPORT_PICO(cfdlevel0,      .notify = true),
+    EXPORT_PICO(cfdlevel1,      .notify = true),
+    EXPORT_PICO(syncdiv,        .notify = true),
+    EXPORT_PICO(range,          .notify = true),
 
     EXPORT_PICO(time),
     EXPORT_PICO(shift),
@@ -264,7 +264,7 @@ static void picoThreadFunc(void *pvt)
         epicsMutexUnlock(pico->lock);
 
         /* clear error and measure */
-        snprintf(pico->data.errstr, ERRBUF, "%s", PICO_NO_ERROR);
+        snprintf(pico->data.error, ERRBUF, "%s", PICO_NO_ERROR);
         pico_measure(&pico->data, pico_time);
 
         /* Process the data. */
@@ -273,10 +273,10 @@ static void picoThreadFunc(void *pvt)
 
         /* check DCCT alarm state */
         if(pico->data.dcct_alarm)
-            snprintf(pico->data.errstr, ERRBUF, "%s", PICO_DCCT_ERROR);
+            snprintf(pico->data.error, ERRBUF, "%s", PICO_DCCT_ERROR);
 
         /* check for PicoHarp errors */
-        if (strcmp(pico->data.errstr, PICO_NO_ERROR) == 0)
+        if (strcmp(pico->data.error, PICO_NO_ERROR) == 0)
             pico->alarm = 0;
         else
             pico->alarm = 1;
@@ -324,13 +324,13 @@ static int initPicoAsyn(
     pico->event_5s = event_5s;
 
     // Hard-wired defaults to be overwritten by autosave/restore
-    pico->data.Offset = 0;
-    pico->data.CFDLevel0 = 300;
-    pico->data.CFDLevel1 = 100;
-    pico->data.CFDZeroX0 = 10;
-    pico->data.CFDZeroX1 = 5;
-    pico->data.SyncDiv = 1;
-    pico->data.Range = 3;
+    pico->data.offset = 0;
+    pico->data.cfdlevel0 = 300;
+    pico->data.cfdlevel1 = 100;
+    pico->data.cfdzerox0 = 10;
+    pico->data.cfdzerox1 = 5;
+    pico->data.syncdiv = 1;
+    pico->data.range = 3;
 
     DECLARE_INTERFACE(pico, Common, asynCommonImpl, pico);
     DECLARE_INTERFACE(pico, DrvUser, asynDrvUserImpl, pico->info);
