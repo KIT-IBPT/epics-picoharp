@@ -3,10 +3,11 @@ import support
 
 EVENT_FAST  = Parameter('EVENT_FAST', 'Fast event code')
 EVENT_5S    = Parameter('EVENT_5S', '5 second event code')
-# CHARGE      = Parameter('CHARGE', 'Stored beam charge')
-CHARGE      = 'SR23C-DI-DCCT-01:CHARGE'
-# FREQ        = Parameter('FREQ', 'Machine frequency')
-FREQ        = 'LI-RF-MOSC-01:FREQ'
+CHARGE      = Parameter('CHARGE', 'Stored beam charge')
+BUCKETS_1   = Parameter('BUCKETS_1',
+    'Number of bunches in machine revolution minus 1')
+PROFILE     = Parameter('PROFILE', 'Number of bins in a single bucket')
+
 
 SetTemplateRecordNames(DEVICE)
 
@@ -44,9 +45,6 @@ dcct = aOut('CHARGE',
 aOut('DCCT_ALARM',
     DOL = dcct.SEVR, OMSL = 'closed_loop', SCAN = '.1 second',
     DESC = 'DCCT alarm status')
-dcct = aOut('FREQ',
-    DOL = CP(MS(ImportRecord(FREQ))),
-    OMSL = 'closed_loop', DESC = 'Master oscillator frequency')
 
 
 # All of the configuration fields are written using ao records with autosave and
@@ -54,28 +52,22 @@ dcct = aOut('FREQ',
 def config(name, **fields):
     return autosave(aOut(name, PINI = 'YES', **fields))
 
-config('TIME',
-    EGU = 'ms', LOPR = 1, HOPR = 60000, DESC = 'Acquisition time')
+config('TIME', EGU = 'ms', LOPR = 1, HOPR = 60000, DESC = 'Acquisition time')
 config('SHIFT',
-    EGU = 'bucket', LOPR = 0, HOPR = 935, DESC = 'Circular Shift')
+    EGU = 'bucket', LOPR = 0, HOPR = BUCKETS_1,
+    DESC = 'Circular Shift')
 config('SAMPLE_WIDTH',
-    EGU = 'bins', LOPR = 1, HOPR = 62, DESC = 'Sample width')
-config('OFFSET',
-    EGU = 'ps', HOPR = 1000000000, DESC = 'Offset in picoseconds')
-config('CFDZEROX0',
-    EGU = 'mV', HOPR = 20, DESC = 'Clock zero cross level')
-config('CFDZEROX1',
-    EGU = 'mV', HOPR = 20, DESC = 'Data zero cross level')
-config('CFDLEVEL0',
-    EGU = 'mV', HOPR = 800, DESC = 'Clock discriminator level')
-config('CFDLEVEL1',
-    EGU = 'mV', HOPR = 800, DESC = 'Data discriminator level')
-config('SYNCDIV',
-    HOPR = 8, DESC = 'Input rate divider')
-config('RANGE',
-    HOPR = 7, DESC = 'Measurement range code')
-config('DEADTIME',
-    HOPR = 936, DESC = 'Detector dead time')
+    EGU = 'bins', LOPR = 1, HOPR = PROFILE,
+    DESC = 'Sample width')
+
+config('OFFSET', EGU = 'ps', HOPR = 1000000000, DESC = 'Offset in picoseconds')
+config('CFDZEROX0', EGU = 'mV', HOPR = 20, DESC = 'Clock zero cross level')
+config('CFDZEROX1', EGU = 'mV', HOPR = 20, DESC = 'Data zero cross level')
+config('CFDLEVEL0', EGU = 'mV', HOPR = 800, DESC = 'Clock discriminator level')
+config('CFDLEVEL1', EGU = 'mV', HOPR = 800, DESC = 'Data discriminator level')
+config('SYNCDIV', HOPR = 8, DESC = 'Input rate divider')
+config('RANGE', HOPR = 7, DESC = 'Measurement range code')
+config('DEADTIME', HOPR = BUCKETS_1, DESC = 'Detector dead time')
 
 aOut('RESET_ACCUM', DESC = 'Reset long term waveform')
 

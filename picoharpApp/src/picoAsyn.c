@@ -87,7 +87,6 @@ static struct struct_info picoStructInfo[] = {
 
     /* Environmental readbacks. */
 
-    EXPORT_PICO(freq),
     EXPORT_PICO(dcct_alarm),
     EXPORT_PICO(charge),
 
@@ -309,7 +308,9 @@ static void picoThreadFunc(void *pvt)
 /* port creation */
 
 static int initPicoAsyn(
-    const char *port, const char *serial, int event_fast, int event_5s)
+    const char *port, const char *serial, int event_fast, int event_5s,
+    int buckets, int bin_size, int valid_samples,
+    int samples_per_bucket, double turns_per_sec)
 {
     printf("initPicoAsyn('%s')\n", port);
 
@@ -330,7 +331,13 @@ static int initPicoAsyn(
     pico->data.cfdzerox0 = 10;
     pico->data.cfdzerox1 = 5;
     pico->data.syncdiv = 1;
-    pico->data.range = 3;
+
+    /* Control parameters from IOC initialisation. */
+    pico->data.range = bin_size;
+    pico->data.buckets = buckets;
+    pico->data.valid_samples = valid_samples;
+    pico->data.samples_per_bucket = samples_per_bucket;
+    pico->data.turns_per_sec = turns_per_sec;
 
     DECLARE_INTERFACE(pico, Common, asynCommonImpl, pico);
     DECLARE_INTERFACE(pico, DrvUser, asynDrvUserImpl, pico->info);
@@ -368,11 +375,16 @@ static int initPicoAsyn(
 /* IOC shell commands */
 
 static const iocshFuncDef initFuncDef = {
-    "initPicoAsyn", 4, (const iocshArg *[]) {
-        &(iocshArg) { "Port name",  iocshArgString },
-        &(iocshArg) { "Serial ID",  iocshArgString },
-        &(iocshArg) { "Event Fast", iocshArgInt },
-        &(iocshArg) { "Event 5s",   iocshArgInt },
+    "initPicoAsyn", 9, (const iocshArg *[]) {
+        &(iocshArg) { "Port name",          iocshArgString },
+        &(iocshArg) { "Serial ID",          iocshArgString },
+        &(iocshArg) { "Event Fast",         iocshArgInt },
+        &(iocshArg) { "Event 5s",           iocshArgInt },
+        &(iocshArg) { "Buckets per turn",   iocshArgInt },
+        &(iocshArg) { "Picoharp bin size",  iocshArgInt },
+        &(iocshArg) { "Total valid bins",   iocshArgInt },
+        &(iocshArg) { "Bins per bucket",    iocshArgInt },
+        &(iocshArg) { "Turns per second",   iocshArgDouble },
     }
 };
 
@@ -380,7 +392,9 @@ static const iocshFuncDef scanFuncDef = { "scanPicoDevices", 0, NULL };
 
 static void initCallFunc(const iocshArgBuf * args)
 {
-    initPicoAsyn(args[0].sval, args[1].sval, args[2].ival, args[3].ival);
+    initPicoAsyn(
+        args[0].sval, args[1].sval, args[2].ival, args[3].ival, args[4].ival,
+        args[5].ival, args[6].ival, args[7].ival, args[8].dval);
 }
 
 static void scanCallFunc(const iocshArgBuf *args)

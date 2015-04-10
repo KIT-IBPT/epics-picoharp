@@ -9,6 +9,7 @@
 #define BUCKETS 936
 #define VALID_SAMPLES 58540
 #define SAMPLES_PER_PROFILE 62  /* floor(VALID_SAMPLES/BUCKETS) */
+
 #define BUFFERS_60 12
 /*(60/5)*/
 #define BUFFERS_180 36
@@ -24,6 +25,15 @@
 struct pico_data
 {
     int device;     /* Device ID used when talking to picoharp. */
+
+    /**************************************************************************/
+    /* Configuration settings programmed during initialisation. */
+
+    double range;               // Configures picoharp bin size
+    int buckets;                // Number of bunches per machine revolution
+    int valid_samples;          // Number of bins per revolution
+    int samples_per_bucket;     // Number of bins per bunch
+    double turns_per_sec;       // Machine revolutions per second
 
     /**************************************************************************/
     /* Values published through EPICS. */
@@ -63,7 +73,6 @@ struct pico_data
     double cfdzerox1;
     double cfdlevel1;
     double syncdiv;
-    double range;
 
     double time;                // Sample time in ms for picoharp
     double shift;               // Pattern shift
@@ -75,7 +84,6 @@ struct pico_data
     /**************************************************************************/
     /* Synchrotron state readbacks (delivered through EPICS). */
 
-    double freq;                // master oscillator (Hz)
     double charge;              // DCCT charge (nC)
     double dcct_alarm;          // DCCT monitor alarm status (!)
 

@@ -325,7 +325,7 @@ void pico_process_fast(struct pico_data *self)
 {
     self->max_bin = compute_max_bin(self->countsbuffer);
     self->total_count_fast = compute_total_count(self->countsbuffer);
-    self->turns_fast = 1e-3 * self->current_time * self->freq / BUCKETS;
+    self->turns_fast = 1e-3 * self->current_time * self->turns_per_sec;
 
     /* Accumulate fast buffer into 5 second buffer. */
     for (int i = 0; i < HISTCHAN; i ++)
@@ -481,39 +481,14 @@ bool pico_init(struct pico_data *self, const char *serial)
     for (int i = 0; i < BUCKETS; i ++)
         bucket_start[i] = (int) round((float) i * VALID_SAMPLES / BUCKETS);
 
-    /* initialize defaults */
-    self->sample_width = 10;
-    self->shift = 652;
-    self->socs_5 = 0;
-    self->socs_60 = 0;
-    self->socs_180 = 0;
-    self->freq = 499652713;
-    self->charge = 0;
+    /* initialize non zero defaults */
+    self->sample_width = 1;
     self->time = 5000;
     self->reset_accum = 1;
+
     self->device = find_pico_device(serial);
     if (self->device < 0)
         return false;
 
     return pico_open(self);
 }
-
-
-#ifdef PICO_TEST_MAIN
-static struct pico_data p;
-
-int main(void)
-{
-    scanPicoDevices();
-    p.offset = 0;
-    p.cfdlevel0 = 300;
-    p.cfdlevel1 = 20;
-    p.cfdzerox0 = 10;
-    p.cfdzerox1 = 11;
-    p.syncdiv = 1;
-    p.range = 3;
-
-    pico_init(&p);
-    pico_measure(&p, 5000);
-}
-#endif
