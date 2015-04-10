@@ -22,11 +22,10 @@
     { \
         .offset = offsetof(STRUCT, MEMBER), \
         .name = #MEMBER, \
-        .elements = (sizeof((STRUCT *)NULL)->MEMBER) / sizeof(TYPE), \
         ALARMED \
     }
 
-#define EXPORT_ARRAY_END {0, 0, 0, 0}
+#define EXPORT_ARRAY_END {0}
 
 #define MEMBER_LOOKUP(s, info) (((char *) (s)) + (info)->offset)
 
@@ -34,7 +33,6 @@ struct struct_info
 {
     int offset;
     const char * name;
-    size_t elements;
     bool alarmed;       // If set an error is raised on alarm
     bool notify;        // If set the updated flag is set if field written
 };

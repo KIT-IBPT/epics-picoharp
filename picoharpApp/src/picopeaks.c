@@ -14,12 +14,8 @@
 
 #define LOG_PLOT_OFFSET     1e-20
 
-/* Variable recording the start of each bucket in the raw sample profile. */
-static int bucket_start[BUCKETS];
 
-
-/* TODO return from function on error */
-
+/* Returns from function on error */
 #define PICO_CHECK(call) \
     { \
         int __status = call; \
@@ -109,18 +105,18 @@ static double sum_peaks(
     int end_offset = start_offset + (int) self->sample_width;
     if (start_offset < 0)
         start_offset = 0;
-    if (end_offset > SAMPLES_PER_PROFILE)
-        end_offset = SAMPLES_PER_PROFILE;
+    if (end_offset > self->samples_per_bucket)
+        end_offset = self->samples_per_bucket;
 
     double total = 0;
-    for (int k = 0; k < BUCKETS; ++k)
+    for (int k = 0; k < self->bucket_count; ++k)
     {
-        int start = bucket_start[k] + start_offset;
-        int end = bucket_start[k] + end_offset;
+        int start = self->bucket_start[k] + start_offset;
+        int end = self->bucket_start[k] + end_offset;
         double sum = 0;
         for (int j = start; j < end; j ++)
             sum += samples[j];
-        bins[(k + BUCKETS - shift) % BUCKETS] = sum;
+        bins[(k + self->bucket_count - shift) % self->bucket_count] = sum;
         total += sum;
     }
     return total;
@@ -132,13 +128,14 @@ static double compute_pileup(
 {
     int length = (int) self->deadtime;
     int shift = (int) self->shift;
-    bucket = (bucket + shift) % BUCKETS;
-    int start_bucket = (bucket + BUCKETS - length) % BUCKETS;
-    int start = bucket_start[start_bucket];
-    int end = bucket_start[bucket];
+    bucket = (bucket + shift) % self->bucket_count;
+    int start_bucket =
+        (bucket + self->bucket_count - length) % self->bucket_count;
+    int start = self->bucket_start[start_bucket];
+    int end = self->bucket_start[bucket];
 
     double pileup = 0;
-    for (int i = start; i != end; i = (i + 1) % VALID_SAMPLES)
+    for (int i = start; i != end; i = (i + 1) % self->valid_samples)
         pileup += samples[i];
     return pileup;
 }
@@ -154,7 +151,7 @@ static void correct_peaks(
 {
     *max_fixup = 0;
     double total_counts = 0;
-    for (int i = 0; i < BUCKETS; i ++)
+    for (int i = 0; i < self->bucket_count; i ++)
     {
         /* Compute pileup factor by counting number of observed events preceding
          * this one.  We convert counts into counts per turn. */
@@ -172,37 +169,33 @@ static void correct_peaks(
 
     /* Scale buckets by pileup correction and current scaling factor. */
     double charge = 1e6 * self->current / self->turns_per_sec;
-    for (int i = 0; i < BUCKETS; i ++)
+    for (int i = 0; i < self->bucket_count; i ++)
         if (total_counts > 0)
-        {
             buckets[i] *= charge / total_counts;
-            if (buckets[i] < LOG_PLOT_OFFSET)
-                /* Fudge for EDM display. */
-                buckets[i] = LOG_PLOT_OFFSET;
-        }
         else
             buckets[i] = 0;
 }
 
 
 /* Compute profile by folding all buckets together. */
-static void compute_profile(const double samples[], double profile[])
+static void compute_profile(
+    struct pico_data *self, const double samples[], double profile[])
 {
-    memset(profile, 0, SAMPLES_PER_PROFILE * sizeof(double));
-    for (int n = 0; n < BUCKETS; n++)
+    memset(profile, 0, (size_t) self->samples_per_bucket * sizeof(double));
+    for (int n = 0; n < self->bucket_count; n++)
     {
-        int ix = bucket_start[n];
-        for (int s = 0; s < SAMPLES_PER_PROFILE; s++)
+        int ix = self->bucket_start[n];
+        for (int s = 0; s < self->samples_per_bucket; s++)
             profile[s] += samples[ix + s];
     }
 }
 
 /* Discover the peak of the profile. */
-static int compute_peak(const double profile[])
+static int compute_peak(struct pico_data *self, const double profile[])
 {
     double max = 0;
     int peak = 0;
-    for (int i = 0; i < SAMPLES_PER_PROFILE; i ++)
+    for (int i = 0; i < self->samples_per_bucket; i ++)
     {
         if (profile[i] > max)
         {
@@ -244,6 +237,18 @@ static void compute_flux(
 }
 
 
+/* This code is needed to work around a misfeature of EDM: when displaying a
+ * waveform with a logarithmic axis EDM handles zero (and negative) values
+ * quite badly.  We fudge this by hacking the vector to force a smallest
+ * display value. */
+static void fixup_display_vector(double vector[], int length)
+{
+    for (int n = 0; n < length; n ++)
+        if (vector[n] < LOG_PLOT_OFFSET)
+            vector[n] = LOG_PLOT_OFFSET;
+}
+
+
 /* The monstrous list of parameters in this function should really be gathered
  * into one or more structures, but the current architecture makes this
  * exceptionally messy to do. */
@@ -255,8 +260,8 @@ static void process_pico_peaks(
 {
     compute_flux(self, turns, total_count, flux, nflux);
 
-    compute_profile(samples, profile);
-    *peak = compute_peak(profile);
+    compute_profile(self, samples, profile);
+    *peak = compute_peak(self, profile);
 
     sum_peaks(self, (int) *peak, (int) self->shift, samples, raw_buckets);
 
@@ -265,13 +270,13 @@ static void process_pico_peaks(
         turns, samples, raw_buckets, fixup, max_fixup, buckets);
 
     *socs = 0;
-    for (int k = 0; k < BUCKETS; ++k)
+    for (int k = 0; k < self->bucket_count; ++k)
         *socs += buckets[k] * buckets[k];
 
-    /* Final fudge on raw samples for EDM display. */
-    for (int n = 0; n < HISTCHAN; n ++)
-        if (samples[n] < LOG_PLOT_OFFSET)
-            samples[n] = LOG_PLOT_OFFSET;
+    /* Fixup values for display. */
+    fixup_display_vector(samples, HISTCHAN);
+    fixup_display_vector(buckets, self->bucket_count);
+    fixup_display_vector(profile, self->samples_per_bucket);
 }
 
 #define PROCESS_PICO_PEAKS(self, period) \
@@ -357,7 +362,7 @@ static void reset_accum(struct pico_data *self)
 
 void pico_process_5s(struct pico_data *self)
 {
-    memcpy(self->samples_5, self->buffer5, sizeof(self->samples_5));
+    memcpy(self->samples_5, self->buffer5, sizeof(self->buffer5));
     self->turns_5 = self->turns_buffer5;
     self->total_count_5 = self->count_buffer5;
 
@@ -476,12 +481,30 @@ static bool pico_open(struct pico_data *self)
     return pico_set_config(self);
 }
 
+
+#define CREATE_ARRAY_RANGE(self, name, length) \
+    self->name##_fast = calloc((size_t) length, sizeof(double)); \
+    self->name##_5    = calloc((size_t) length, sizeof(double)); \
+    self->name##_60   = calloc((size_t) length, sizeof(double)); \
+    self->name##_180  = calloc((size_t) length, sizeof(double)); \
+    self->name##_all  = calloc((size_t) length, sizeof(double));
+
+
 bool pico_init(struct pico_data *self, const char *serial)
 {
+    /* Initialise dynamically created arrays. */
+    CREATE_ARRAY_RANGE(self, samples, HISTCHAN);
+    CREATE_ARRAY_RANGE(self, profile, self->samples_per_bucket);
+    CREATE_ARRAY_RANGE(self, buckets, self->bucket_count);
+    CREATE_ARRAY_RANGE(self, raw_buckets, self->bucket_count);
+    CREATE_ARRAY_RANGE(self, fixup, self->bucket_count);
+
     /* Initialise the bucket boundaries.  Doesn't matter if we do this more than
      * once, the result is the same. */
-    for (int i = 0; i < BUCKETS; i ++)
-        bucket_start[i] = (int) round((float) i * VALID_SAMPLES / BUCKETS);
+    self->bucket_start = calloc((size_t) self->bucket_count, sizeof(int));
+    for (int i = 0; i < self->bucket_count; i ++)
+        self->bucket_start[i] = (int) lround(
+            (double) i * self->valid_samples / self->bucket_count);
 
     /* initialize non zero defaults */
     self->sample_width = 1;

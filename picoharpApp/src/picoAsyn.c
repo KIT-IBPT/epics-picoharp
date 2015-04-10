@@ -116,51 +116,32 @@ struct pico_pvt
     struct pico_data data;
 };
 
-/* float 64 array */
 
-static asynStatus pico_write(
-    void *drvPvt, asynUser *pasynUser, epicsFloat64 *value, size_t elements)
+
+static const struct struct_info *lookup_info(void *drvPvt, asynUser *pasynUser)
 {
     struct pico_pvt *pico = drvPvt;
-    struct pico_data *data = &pico->data;
-
     int field = pasynUser->reason;
     if (field < 0)
-        return asynError;
-    const struct struct_info *info = &pico->info[field];
-
-    if (elements > info->elements)
-        return asynError;
-
-    epicsMutexMustLock(pico->lock);
-
-    memcpy(MEMBER_LOOKUP(data, info), value, elements * sizeof(epicsFloat64));
-    if (info->notify)
-        data->parameter_updated = true;
-
-    epicsMutexUnlock(pico->lock);
-
-    return asynSuccess;
+        return NULL;
+    else
+        return &pico->info[field];
 }
 
-static asynStatus pico_read(
+
+static asynStatus pico_read_array(
     void *drvPvt, asynUser *pasynUser, epicsFloat64 *value,
     size_t elements, size_t *nIn)
 {
+    const struct struct_info *info = lookup_info(drvPvt, pasynUser);
+    if (info == NULL)
+        return asynError;
+
     struct pico_pvt *pico = drvPvt;
-    struct pico_data *data = &pico->data;
-
-    int field = pasynUser->reason;
-    if (field < 0)
-        return asynError;
-    const struct struct_info *info = &pico->info[field];
-
-    if (elements > info->elements)
-        return asynError;
-
     epicsMutexMustLock(pico->lock);
 
-    memcpy(value, MEMBER_LOOKUP(data, info), elements * sizeof(epicsFloat64));
+    double *array = *(double **) MEMBER_LOOKUP(&pico->data, info);
+    memcpy(value, array, elements * sizeof(epicsFloat64));
     *nIn = elements;
     bool alarm = pico->alarm && info->alarmed;
 
@@ -169,46 +150,66 @@ static asynStatus pico_read(
     return alarm ? asynError : asynSuccess;
 }
 
-static asynStatus pico_write_adapter(
-    void *drvPvt, asynUser *pasynUser, epicsFloat64 value)
-{
-    return pico_write(drvPvt, pasynUser, &value, 1);
-}
-
-static asynStatus pico_read_adapter(
+static asynStatus pico_read_value(
     void *drvPvt, asynUser *pasynUser, epicsFloat64 *value)
 {
-    size_t nIn;
-    return pico_read(drvPvt, pasynUser, value, 1, &nIn);
+    const struct struct_info *info = lookup_info(drvPvt, pasynUser);
+    if (info == NULL)
+        return asynError;
+
+    struct pico_pvt *pico = drvPvt;
+    epicsMutexMustLock(pico->lock);
+
+    *value = *(double *) MEMBER_LOOKUP(&pico->data, info);
+    bool alarm = pico->alarm && info->alarmed;
+
+    epicsMutexUnlock(pico->lock);
+
+    return alarm ? asynError : asynSuccess;
+}
+
+
+static asynStatus pico_write_value(
+    void *drvPvt, asynUser *pasynUser, epicsFloat64 value)
+{
+    const struct struct_info *info = lookup_info(drvPvt, pasynUser);
+    if (info == NULL)
+        return asynError;
+
+    struct pico_pvt *pico = drvPvt;
+    epicsMutexMustLock(pico->lock);
+
+    *(double *) MEMBER_LOOKUP(&pico->data, info) = value;
+
+    epicsMutexUnlock(pico->lock);
+    return asynSuccess;
 }
 
 static asynStatus oct_read(
     void *drvPvt, asynUser *pasynUser, char *value,
     size_t numchars, size_t *nbytesTransferred, int *eomReason)
 {
-    struct pico_pvt *pico = drvPvt;
-    struct pico_data *data = &pico->data;
-    int field = pasynUser->reason;
-    if (field < 0)
+    const struct struct_info *info = lookup_info(drvPvt, pasynUser);
+    if (info == NULL)
         return asynError;
-    const struct struct_info *info = &pico->info[field];
 
-    epicsMutexLock(pico->lock);
-    snprintf(value, numchars, "%s", MEMBER_LOOKUP(data, info));
+    struct pico_pvt *pico = drvPvt;
+    epicsMutexMustLock(pico->lock);
 
+    snprintf(value, numchars, "%s", MEMBER_LOOKUP(&pico->data, info));
     *nbytesTransferred = numchars;
     *eomReason = 0;
+
     epicsMutexUnlock(pico->lock);
     return asynSuccess;
 }
 
 static asynFloat64Array asynFloat64ArrayImpl = {
-    .write = pico_write,
-    .read = pico_read
+    .read = pico_read_array
 };
 static asynFloat64 asynFloat64Impl = {
-    .write = pico_write_adapter,
-    .read = pico_read_adapter
+    .write = pico_write_value,
+    .read = pico_read_value
 };
 static asynCommon asynCommonImpl = {
     .report = common_report,
@@ -309,7 +310,7 @@ static void picoThreadFunc(void *pvt)
 
 static int initPicoAsyn(
     const char *port, const char *serial, int event_fast, int event_5s,
-    int buckets, int bin_size, int valid_samples,
+    int bucket_count, int bin_size, int valid_samples,
     int samples_per_bucket, double turns_per_sec)
 {
     printf("initPicoAsyn('%s')\n", port);
@@ -334,7 +335,7 @@ static int initPicoAsyn(
 
     /* Control parameters from IOC initialisation. */
     pico->data.range = bin_size;
-    pico->data.buckets = buckets;
+    pico->data.bucket_count = bucket_count;
     pico->data.valid_samples = valid_samples;
     pico->data.samples_per_bucket = samples_per_bucket;
     pico->data.turns_per_sec = turns_per_sec;

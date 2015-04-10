@@ -6,21 +6,16 @@
 #define BLOCK 0
 
 #define ERRBUF 1024
-#define BUCKETS 936
-#define VALID_SAMPLES 58540
-#define SAMPLES_PER_PROFILE 62  /* floor(VALID_SAMPLES/BUCKETS) */
 
-#define BUFFERS_60 12
-/*(60/5)*/
-#define BUFFERS_180 36
-/*(180/5)*/
+#define BUFFERS_60  12  /*(60/5)*/
+#define BUFFERS_180 36  /*(180/5)*/
 
-#define DECLARE_RANGE(name, suffix...) \
-    double name##_fast suffix; \
-    double name##_5 suffix; \
-    double name##_60 suffix; \
-    double name##_180 suffix; \
-    double name##_all suffix
+#define DECLARE_RANGE(name, prefix...) \
+    double prefix name##_fast; \
+    double prefix name##_5; \
+    double prefix name##_60; \
+    double prefix name##_180; \
+    double prefix name##_all
 
 struct pico_data
 {
@@ -30,7 +25,7 @@ struct pico_data
     /* Configuration settings programmed during initialisation. */
 
     double range;               // Configures picoharp bin size
-    int buckets;                // Number of bunches per machine revolution
+    int bucket_count;           // Number of bunches per machine revolution
     int valid_samples;          // Number of bins per revolution
     int samples_per_bucket;     // Number of bins per bunch
     double turns_per_sec;       // Machine revolutions per second
@@ -40,15 +35,15 @@ struct pico_data
 
     /* These variables belong in one or more structures.  Unfortunately given
      * the history of this project doing this will take too long to do. */
-    DECLARE_RANGE(samples,      [HISTCHAN]);    // Raw samples from picoharp
-    DECLARE_RANGE(raw_buckets,  [BUCKETS]);     // Uncorrected fill patter
-    DECLARE_RANGE(fixup,        [BUCKETS]);     // Correction factor
-    DECLARE_RANGE(max_fixup);                   // Maximum correction factor
-    DECLARE_RANGE(buckets,      [BUCKETS]);     // Corrected fill pattern
+    DECLARE_RANGE(samples, *);  // Raw samples from picoharp
+    DECLARE_RANGE(raw_buckets, *); // Uncorrected fill patter
+    DECLARE_RANGE(fixup, *);    // Correction factor
+    DECLARE_RANGE(max_fixup);   // Maximum correction factor
+    DECLARE_RANGE(buckets, *);  // Corrected fill pattern
     DECLARE_RANGE(socs);        // Sum of Charge Squared
     DECLARE_RANGE(turns);       // Turn count for capture
 
-    DECLARE_RANGE(profile, [SAMPLES_PER_PROFILE]);  // Single bunch profile
+    DECLARE_RANGE(profile, *);  // Single bunch profile
     DECLARE_RANGE(peak);        // Position of profile peak
     DECLARE_RANGE(flux);        // Counts per turn
     DECLARE_RANGE(nflux);       // Counts per turn per nC
@@ -98,6 +93,8 @@ struct pico_data
     /* PicoHarp acquisition results */
     int overflow;
     unsigned int countsbuffer[HISTCHAN];
+
+    int *bucket_start;          // Start of each bucket in raw sample profile
 
 
     int index60;
