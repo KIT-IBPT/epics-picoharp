@@ -8,4 +8,8 @@ EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
 ASYN = $(SUPPORT)/asyn/4-21
 
+# Development version
+EPICSDBBUILDER = $(TOP)/../epicsdbbuilder
+# EPICSDBBUILDER = 1.1
+
 -include $(TOP)/configure/RELEASE.private
