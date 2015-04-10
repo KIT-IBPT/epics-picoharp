@@ -38,7 +38,7 @@ class PicoharpDb(Substitution):
     Dependencies = (Picoharp,)
     TemplateFile = 'picoharp.db'
     Arguments = (
-        'DEVICE', 'PORT', 'CHARGE', 'EVENT_FAST', 'EVENT_5S',
+        'DEVICE', 'PORT', 'CURRENT', 'EVENT_FAST', 'EVENT_5S',
         'BUCKETS_1', 'PROFILE')
 
 class PicoharpData(Substitution):
@@ -61,7 +61,7 @@ class PicoharpInstance:
         cls.pico_event += 1
         return cls.pico_event
 
-    def __init__(self, device, serial, charge,
+    def __init__(self, device, serial, current,
             buckets = 936, f_rev = None, f_rf = None):
 
         # Compute key picoharp parameters
@@ -85,7 +85,7 @@ class PicoharpInstance:
             event = event_5s
 
         PicoharpDb(
-            DEVICE = device, PORT = port, CHARGE = charge,
+            DEVICE = device, PORT = port, CURRENT = current,
             EVENT_FAST = event_fast, EVENT_5S = event_5s,
             BUCKETS_1 = buckets - 1, PROFILE = samples_per_bucket)
 

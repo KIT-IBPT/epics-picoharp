@@ -88,7 +88,7 @@ static struct struct_info picoStructInfo[] = {
     /* Environmental readbacks. */
 
     EXPORT_PICO(dcct_alarm),
-    EXPORT_PICO(charge),
+    EXPORT_PICO(current),
 
 
     EXPORT_ARRAY_END

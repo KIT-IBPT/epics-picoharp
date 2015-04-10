@@ -3,7 +3,7 @@ import support
 
 EVENT_FAST  = Parameter('EVENT_FAST', 'Fast event code')
 EVENT_5S    = Parameter('EVENT_5S', '5 second event code')
-CHARGE      = Parameter('CHARGE', 'Stored beam charge')
+CURRENT     = Parameter('CURRENT', 'Stored beam charge')
 BUCKETS_1   = Parameter('BUCKETS_1',
     'Number of bunches in machine revolution minus 1')
 PROFILE     = Parameter('PROFILE', 'Number of bins in a single bucket')
@@ -39,9 +39,9 @@ support.stringIn('ERROR',
 stringIn('RESET_TIME',
     EVNT = EVENT_5S, DESC = "Time long term history last reset")
 
-dcct = aOut('CHARGE',
-    DOL = CP(MS(ImportRecord(CHARGE))),
-    OMSL = 'closed_loop', DESC = 'DCCT charge readback')
+dcct = aOut('CURRENT',
+    DOL = CP(MS(ImportRecord(CURRENT))),
+    OMSL = 'closed_loop', DESC = 'DCCT stored current readback')
 aOut('DCCT_ALARM',
     DOL = dcct.SEVR, OMSL = 'closed_loop', SCAN = '.1 second',
     DESC = 'DCCT alarm status')

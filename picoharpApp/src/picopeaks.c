@@ -171,10 +171,11 @@ static void correct_peaks(
     }
 
     /* Scale buckets by pileup correction and current scaling factor. */
+    double charge = 1e6 * self->current / self->turns_per_sec;
     for (int i = 0; i < BUCKETS; i ++)
         if (total_counts > 0)
         {
-            buckets[i] *= self->charge / total_counts;
+            buckets[i] *= charge / total_counts;
             if (buckets[i] < LOG_PLOT_OFFSET)
                 /* Fudge for EDM display. */
                 buckets[i] = LOG_PLOT_OFFSET;
@@ -235,8 +236,9 @@ static void compute_flux(
     double turns, double total_count, double *flux, double *nflux)
 {
     *flux = total_count / turns;
-    if (self->charge > 0.001)
-        *nflux = *flux / self->charge;
+    double charge = 1e6 * self->current / self->turns_per_sec;
+    if (charge > 0)
+        *nflux = *flux / charge;
     else
         *nflux = 0;
 }

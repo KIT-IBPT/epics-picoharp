@@ -84,7 +84,7 @@ struct pico_data
     /**************************************************************************/
     /* Synchrotron state readbacks (delivered through EPICS). */
 
-    double charge;              // DCCT charge (nC)
+    double current;             // Stored beam current in mA
     double dcct_alarm;          // DCCT monitor alarm status (!)
 
 

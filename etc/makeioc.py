@@ -20,8 +20,8 @@ ioc_name = 'BL01B-DI-IOC-12'
 iocbuilder.EpicsEnvSet('EPICS_CA_MAX_ARRAY_BYTES', 2000000)
 
 # Picoharp fill pattern monitor
-charge = 'SR23C-DI-DCCT-01:CHARGE'
-picoharp.PicoharpInstance('BL01B-DI-PICO-01', '1013107', charge)
+current = 'SR-DI-DCCT-01:SIGNAL'
+picoharp.PicoharpInstance('BL01B-DI-PICO-01', '1013107', current)
 
 pvlogging.PvLogging()
 iocbuilder.WriteNamedIoc('ioc', ioc_name)
