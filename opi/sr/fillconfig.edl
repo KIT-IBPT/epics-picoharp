@@ -1,0 +1,606 @@
+4 0 1
+beginScreenProperties
+major 4
+minor 0
+release 1
+x 2233
+y 802
+w 385
+h 192
+font "helvetica-medium-r-12.0"
+ctlFont "helvetica-medium-r-12.0"
+btnFont "helvetica-medium-r-12.0"
+fgColor index 14
+bgColor index 3
+textColor index 14
+ctlFgColor1 index 14
+ctlFgColor2 index 0
+ctlBgColor1 index 3
+ctlBgColor2 index 14
+topShadowColor index 1
+botShadowColor index 11
+title "Diagnostics Photon Counting System"
+showGrid
+snapToGrid
+gridSize 8
+disableScroll
+endScreenProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 0
+y 0
+w 384
+h 32
+font "helvetica-medium-r-18.0"
+fontAlign "center"
+fgColor index 14
+bgColor index 73
+value {
+  "$(device) Settings"
+}
+endObjectProperties
+
+# (Exit Button)
+object activeExitButtonClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 328
+y 160
+w 48
+h 24
+fgColor index 46
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+label "EXIT"
+font "helvetica-medium-r-12.0"
+3d
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 40
+w 48
+h 18
+controlPv "$(device):TIME"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 40
+w 108
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Acquisition (ms):"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 328
+y 40
+w 48
+h 18
+controlPv "$(device):SHIFT"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 216
+y 40
+w 51
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Fill shift:"
+}
+autoSize
+endObjectProperties
+
+# (Shell Command)
+object shellCmdClass
+beginObjectProperties
+major 4
+minor 2
+release 0
+x 4
+y 4
+w 24
+h 24
+fgColor index 14
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 11
+font "helvetica-bold-r-14.0"
+buttonLabel "?"
+numCmds 1
+command {
+  0 "diagnostics-help sr_fillconfig"
+}
+includeHelpIcon
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 64
+w 48
+h 18
+controlPv "$(device):OFFSET"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 64
+w 70
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Offset (ps):"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 88
+w 48
+h 18
+controlPv "$(device):SYNCDIV"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 88
+w 48
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Divider:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 328
+y 88
+w 48
+h 18
+controlPv "$(device):RANGE"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 216
+y 88
+w 44
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Range:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 112
+w 48
+h 18
+controlPv "$(device):CFDLEVEL0"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 112
+w 109
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Clock level (mV):"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 216
+y 112
+w 103
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Data level (mV):"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 328
+y 112
+w 48
+h 18
+controlPv "$(device):CFDLEVEL1"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 136
+w 48
+h 18
+controlPv "$(device):CFDZEROX0"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 136
+w 107
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Clock zero (mV):"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 216
+y 136
+w 101
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Data zero (mV):"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 328
+y 136
+w 48
+h 18
+controlPv "$(device):CFDZEROX1"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 328
+y 64
+w 48
+h 18
+controlPv "$(device):SAMPLE_WIDTH"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 216
+y 64
+w 80
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Sample size:"
+}
+autoSize
+endObjectProperties
+
+# (Text Control)
+object activeXTextDspClass
+beginObjectProperties
+major 4
+minor 5
+release 0
+x 120
+y 160
+w 48
+h 18
+controlPv "$(device):DEADTIME"
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+editable
+autoHeight
+motifWidget
+limitsFromDb
+nullColor index 0
+newPos
+objType "controls"
+clipToDspLimits
+noExecuteClipMask
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 8
+y 160
+w 63
+h 16
+font "helvetica-medium-r-14.0"
+fgColor index 14
+bgColor index 3
+useDisplayBg
+value {
+  "Deadtime:"
+}
+autoSize
+endObjectProperties
+

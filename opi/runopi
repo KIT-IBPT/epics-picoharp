@@ -1,0 +1,7 @@
+#!/bin/sh
+
+export EPICS_CA_MAX_ARRAY_BYTES=1000000
+
+cd "$(dirname "$0")"
+
+exec edm -x -eolc -m device=BL01B-DI-PICO-01 sr/fill.edl
