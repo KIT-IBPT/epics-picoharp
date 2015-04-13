@@ -1,6 +1,10 @@
 TOP=../..
-
 include $(TOP)/configure/CONFIG
+
+# This line is a temporary hack while $(TOP) is in the definition of PHLIB.
+PHLIB := '$(shell cd $(PHLIB); pwd)'
+
+PHLIB_64 = $(PHLIB)/Linux/PHLib_v3.0.0.1_64bit/library
 
 USR_CFLAGS += -std=gnu99
 
@@ -27,8 +31,10 @@ picoharp_DBD += base.dbd
 picoharp_DBD += asyn.dbd
 picoharp_DBD += pico.dbd
 
-REALTOP := $(shell cd $(TOP); pwd)/picoharpApp/src
-USR_LDFLAGS = -L$(REALTOP) -Wl,-rpath,$(REALTOP)
+
+USR_CPPFLAGS += -I$(PHLIB_64)
+USR_LDFLAGS += -L$(PHLIB_64)
+USR_LDFLAGS += -Wl,-rpath,$(PHLIB_64)
 
 pico_SYS_LIBS += phlib
 
