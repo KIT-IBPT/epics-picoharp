@@ -3,11 +3,12 @@
 # top directory each time this file is changed.
 
 SUPPORT = /dls_sw/prod/R3.14.12.3/support
+DLS_TOOLS = /dls_sw/prod/tools/RHEL6-x86_64
 
 EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 
 ASYN = $(SUPPORT)/asyn/4-21
-PHLIB = $(TOP)/'PH300 PHLib v3.0.0.1'
+PHLIB = $(DLS_TOOLS)/PicoHarp300/3-0-0-1/prefix
 
 EPICSDBBUILDER = 1.1
 

@@ -1,11 +1,6 @@
 TOP=../..
 include $(TOP)/configure/CONFIG
 
-# This line is a temporary hack while $(TOP) is in the definition of PHLIB.
-PHLIB := '$(shell cd $(PHLIB); pwd)'
-
-PHLIB_64 = $(PHLIB)/Linux/PHLib_v3.0.0.1_64bit/library
-
 USR_CFLAGS += -std=gnu99
 
 USR_CFLAGS += -Werror
@@ -32,10 +27,9 @@ picoharp_DBD += asyn.dbd
 picoharp_DBD += pico.dbd
 
 
-USR_CPPFLAGS += -I$(PHLIB_64)
-USR_LDFLAGS += -L$(PHLIB_64)
-USR_LDFLAGS += -Wl,-rpath,$(PHLIB_64)
+USR_INCLUDES += -I$(PHLIB)/include
+phlib_DIR = $(PHLIB)/lib
 
-pico_SYS_LIBS += phlib
+pico_LIBS += phlib
 
 include $(TOP)/configure/RULES
