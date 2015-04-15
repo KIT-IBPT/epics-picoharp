@@ -39,13 +39,7 @@ class PicoharpDb(Substitution):
     TemplateFile = 'picoharp.db'
     Arguments = (
         'DEVICE', 'PORT', 'CURRENT', 'EVENT_FAST', 'EVENT_5S',
-        'BUCKETS_1', 'PROFILE')
-
-class PicoharpData(Substitution):
-    Dependecies = (Picoharp,)
-    TemplateFile = 'picodata.db'
-    Arguments = (
-        'DEVICE', 'PORT', 'EVENT_FAST', 'EVENT_5S', 'BUCKETS', 'PROFILE')
+        'BUCKETS', 'BUCKETS_1', 'PROFILE')
 
 class PicoharpInstance:
     pico_port = 0
@@ -76,15 +70,11 @@ class PicoharpInstance:
             port, serial, event_fast, event_5s,
             buckets, bin_size, valid_samples, samples_per_bucket, turns_per_sec)
 
-        PicoharpData(
-            DEVICE = device, PORT = port,
-            EVENT_FAST = event_fast, EVENT_5S = event_5s,
-            BUCKETS = buckets, PROFILE = samples_per_bucket)
-
         PicoharpDb(
             DEVICE = device, PORT = port, CURRENT = current,
             EVENT_FAST = event_fast, EVENT_5S = event_5s,
-            BUCKETS_1 = buckets - 1, PROFILE = samples_per_bucket)
+            BUCKETS = buckets, BUCKETS_1 = buckets - 1,
+            PROFILE = samples_per_bucket)
 
 
 def compute_parameters(buckets, f_rev, f_rf):

@@ -119,7 +119,7 @@ The following calls must be made before `iocInit`:
                             string.
 
     `event_fast`            The driver uses two EPICS event codes internally.
-    `event_5s`
+    `event_5s`              This is the other event code.
 
     `buckets`               Number of bunches in the ring.
 
@@ -137,45 +137,32 @@ The following calls must be made before `iocInit`:
 Database Substitutions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-One substitution instance for `db/picoharp.db` and for `db/picodata.db`
-must be made.  Note that the array sizes in the substitutions *must* be correct
-as otherwise a segmentation fault is quite likely to occur!
+One substitution instance for `db/picoharp.db` must be made for each PicoHarp
+controlled by this IOC.  Note that the array sizes in the substitutions *must*
+be correct as otherwise a segmentation fault is quite likely to occur!
 
 `picoharp.db`
     This must be instantiated once (per PicoHarp) with the following parameters:
 
-    ======================= ====================================================
-    `DEVICE`                Prefix used to name the PicoHarp instance.  Should
-                            be the same for all substitution instances for a
-                            single PicoHarp.
+    =============== ============================================================
+    `DEVICE`        Prefix used to name the PicoHarp instance.  Should be the
+                    same for all substitution instances for a single PicoHarp.
 
-    `PORT`                  This must be identical to the `asyn_port` parameter
-                            passed to `initPicoAsyn`.
+    `PORT`          This must be identical to the `asyn_port` parameter passed
+                    to `initPicoAsyn`.
 
-    `CURRENT`               This should name an EPICS PV which provides an
-                            and up to date reading of the machine beam current
-                            in mA.  This will be used to scale the computed fill
-                            pattern.
+    `CURRENT`       This should name an EPICS PV which provides an and up to
+                    date reading of the machine beam current in mA.  This will
+                    be used to scale the computed fill pattern.
 
-    `EVENT_FAST`            The `event_fast` value passed to `initPicoAsyn`
-    `EVENT_5S`              The `event_5s` value passed to `initPicoAsyn`
+    `EVENT_FAST`    The `event_fast` value passed to `initPicoAsyn`
+    `EVENT_5S`      The `event_5s` value passed to `initPicoAsyn`
 
-    `BUCKETS_1`             Must be `buckets`-1.
+    `BUCKETS`       Must be `buckets`, ie number of bunches per turn.
+    `BUCKETS_1`     Must be `buckets`-1.
 
-    `PROFILE`               Must be `samples_per_bucket`.
-    ======================= ====================================================
-
-`picodata.db`
-    This must be instantiated once (per PicoHarp) with the following parameters:
-
-    ======================= ====================================================
-    `DEVICE`                Should be the same as above.
-    `PORT`                  Must be the same as above.
-    `EVENT_FAST`            The `event_fast` value passed to `initPicoAsyn`
-    `EVENT_5S`              The `event_5s` value passed to `initPicoAsyn`
-    `BUCKETS`               Must be `buckets` as computed above.
-    `PROFILE`               Must be `samples_per_bucket`
-    ======================= ====================================================
+    `PROFILE`       Must be `samples_per_bucket`.
+    =============== ============================================================
 
 
 References
