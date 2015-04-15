@@ -1,11 +1,7 @@
 file $(PICOHARP)/db/picodata.db
 {
-pattern { DEVICE, PORT, EVENT, SUFFIX, ASUFFIX, BUCKETS, PROFILE }
-    { "BL01B-DI-PICO-01", "PICO1", "101", "FAST", "fast", "936", "62" }
-    { "BL01B-DI-PICO-01", "PICO1", "102", "5",    "5",    "936", "62" }
-    { "BL01B-DI-PICO-01", "PICO1", "102", "60",   "60",   "936", "62" }
-    { "BL01B-DI-PICO-01", "PICO1", "102", "180",  "180",  "936", "62" }
-    { "BL01B-DI-PICO-01", "PICO1", "102", "ALL",  "all",  "936", "62" }
+pattern { DEVICE, PORT, EVENT_FAST, EVENT_5S, BUCKETS, PROFILE }
+    { "BL01B-DI-PICO-01", "PICO1", "101", "102", "936", "62" }
 }
 
 file $(PICOHARP)/db/picoharp.db

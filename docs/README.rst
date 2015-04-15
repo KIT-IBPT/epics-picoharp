@@ -137,7 +137,7 @@ The following calls must be made before `iocInit`:
 Database Substitutions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-One substitution instance for `db/picoharp.db` and five for `db/picodata.db`
+One substitution instance for `db/picoharp.db` and for `db/picodata.db`
 must be made.  Note that the array sizes in the substitutions *must* be correct
 as otherwise a segmentation fault is quite likely to occur!
 
@@ -166,25 +166,16 @@ as otherwise a segmentation fault is quite likely to occur!
     ======================= ====================================================
 
 `picodata.db`
-    Five instances must be created.  The following parameters must be identical
-    for all instances:
+    This must be instantiated once (per PicoHarp) with the following parameters:
 
     ======================= ====================================================
     `DEVICE`                Should be the same as above.
     `PORT`                  Must be the same as above.
-    `BUCKETS`               Must be `buckets` as compute above.
+    `EVENT_FAST`            The `event_fast` value passed to `initPicoAsyn`
+    `EVENT_5S`              The `event_5s` value passed to `initPicoAsyn`
+    `BUCKETS`               Must be `buckets` as computed above.
     `PROFILE`               Must be `samples_per_bucket`
     ======================= ====================================================
-
-    The following parameters must have values as shown for the five instances:
-
-    =========== =============== =========== =========== =========== ============
-    Pattern     Instances
-    ----------- ----------------------------------------------------------------
-    `EVENT`     `event_fast`    `event_5s`  `event_5s`  `event_5s`  `event_5s`
-    `SUFFIX`    "FAST"          "5"         "60"        "180"       "ALL"
-    `ASUFFIX`   "fast"          "5"         "60"        "180"       "all"
-    =========== =============== =========== =========== =========== ============
 
 
 References
