@@ -223,19 +223,6 @@ static unsigned int compute_total_count(const unsigned int samples[])
     return total_count;
 }
 
-/* Updates flux. */
-static void compute_flux(
-    struct pico_data *self,
-    double turns, double total_count, double *flux, double *nflux)
-{
-    *flux = total_count / turns;
-    double charge = 1e6 * self->current / self->turns_per_sec;
-    if (charge > 0)
-        *nflux = *flux / charge;
-    else
-        *nflux = 0;
-}
-
 
 /* This code is needed to work around a misfeature of EDM: when displaying a
  * waveform with a logarithmic axis EDM handles zero (and negative) values
@@ -256,9 +243,9 @@ static void process_pico_peaks(
     struct pico_data *self, double turns, double samples[],
     double raw_buckets[], double fixup[], double *max_fixup,
     double buckets[], double *socs, double profile[], double *peak,
-    double *flux, double *nflux, double total_count)
+    double *flux, double total_count)
 {
-    compute_flux(self, turns, total_count, flux, nflux);
+    *flux = total_count / turns;
 
     compute_profile(self, samples, profile);
     *peak = compute_peak(self, profile);
@@ -286,8 +273,7 @@ static void process_pico_peaks(
         self->fixup_##period, &self->max_fixup_##period, \
         self->buckets_##period, &self->socs_##period, \
         self->profile_##period, &self->peak_##period, \
-        &self->flux_##period, &self->nflux_##period, \
-        self->total_count_##period)
+        &self->flux_##period, self->total_count_##period)
 
 
 static void accum_buffer(

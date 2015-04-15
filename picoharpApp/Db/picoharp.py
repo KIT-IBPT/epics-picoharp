@@ -18,7 +18,6 @@ def add_events(constructor, default_event = EVENT_FAST):
 
 
 def picoharp_core():
-    Waveform = add_events(support.Waveform)
     aIn      = add_events(support.aIn)
     stringIn = add_events(support.stringIn)
 
@@ -95,8 +94,6 @@ def make_data_instance(SUFFIX, EVENT):
 
     Waveform('PROFILE', PROFILE, DESC = 'Bucket profile')
     aIn('FLUX', PREC = 3, EGU = 'count/turn', DESC = 'Counts observed per turn')
-    aIn('NFLUX', PREC = 1, EGU = 'count/turn/nC',
-        DESC = 'Normalised counts observed per turn')
     aIn('TOTAL_COUNT', EGU = 'count', DESC = 'Total number of counts observed')
 
     peak = aIn('PEAK',

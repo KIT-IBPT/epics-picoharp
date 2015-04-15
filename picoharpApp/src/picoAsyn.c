@@ -58,7 +58,6 @@ static struct struct_info picoStructInfo[] = {
     EXPORT_RANGE(profile),
     EXPORT_RANGE(peak),
     EXPORT_RANGE(flux),
-    EXPORT_RANGE(nflux),
     EXPORT_RANGE(total_count),
 
     EXPORT_PICO(max_bin,        .alarmed = true),

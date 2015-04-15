@@ -46,7 +46,6 @@ struct pico_data
     DECLARE_RANGE(profile, *);  // Single bunch profile
     DECLARE_RANGE(peak);        // Position of profile peak
     DECLARE_RANGE(flux);        // Counts per turn
-    DECLARE_RANGE(nflux);       // Counts per turn per nC
     DECLARE_RANGE(total_count); // Total counts captured (= flux * turns)
 
     double max_bin;             // Maximum count in one bin
