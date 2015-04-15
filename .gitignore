@@ -1,8 +1,10 @@
 O.*
 *.pyc
+*.html
 
-/bin
-/db
-/dbd
+bin
+db
+dbd
+
 /lib
 /etc/ioc
