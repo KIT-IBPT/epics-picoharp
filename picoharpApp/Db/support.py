@@ -41,5 +41,5 @@ aIn  = record_creator('ai', 'asynFloat64')
 aOut = record_creator('ao', 'asynFloat64')
 stringIn = record_creator('stringin', 'asynOctetRead')
 
-def autosave(record, field = 'VAL', phase = 2):
+def autosave(record, field = 'VAL', phase = 1):
     record.add_metadata('autosave %d %s' % (phase, field))
