@@ -178,7 +178,10 @@ static asynStatus pico_write_value(
     struct pico_pvt *pico = drvPvt;
     epicsMutexMustLock(pico->lock);
 
-    *(double *) MEMBER_LOOKUP(&pico->data, info) = value;
+    struct pico_data *data = &pico->data;
+    *(double *) MEMBER_LOOKUP(data, info) = value;
+    if (info->notify)
+        data->parameter_updated = true;
 
     epicsMutexUnlock(pico->lock);
     return asynSuccess;
