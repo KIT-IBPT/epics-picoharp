@@ -75,7 +75,7 @@ def picoharp_config():
 
 
 def make_data_instance(SUFFIX, EVENT):
-    SetRecordNames(lambda name: '%s:%s_%s' % (DEVICE, name, SUFFIX))
+    old_names = SetRecordNames(lambda name: '%s:%s_%s' % (DEVICE, name, SUFFIX))
     SetAsynAddr(lambda name: '%s_%s' % (name.lower(), SUFFIX.lower()))
 
     Waveform = add_events(support.Waveform, EVENT)
@@ -85,7 +85,7 @@ def make_data_instance(SUFFIX, EVENT):
     Waveform('SAMPLES', 65536, DESC = 'Raw picoharp signal')
     Waveform('RAW_BUCKETS', BUCKETS, DESC = 'Uncorrected fill pattern')
     Waveform('FIXUP', BUCKETS, DESC = 'Fill pattern correction factor')
-    Waveform('BUCKETS', BUCKETS, DESC = 'Corrected fill pattern')
+    buckets = Waveform('BUCKETS', BUCKETS, DESC = 'Corrected fill pattern')
 
     aIn('MAX_FIXUP', PREC = 2, DESC = 'Maximum correction factor')
     aIn('SOCS', EGU = 'nC^2', DESC = 'Total counts squared',
@@ -93,7 +93,8 @@ def make_data_instance(SUFFIX, EVENT):
     aIn('TURNS', EGU = 'turns', DESC = 'Number of turns captured')
 
     Waveform('PROFILE', PROFILE, DESC = 'Bucket profile')
-    aIn('FLUX', PREC = 3, EGU = 'count/turn', DESC = 'Counts observed per turn')
+    flux = aIn('FLUX',
+        PREC = 3, EGU = 'count/turn', DESC = 'Counts observed per turn')
     aIn('TOTAL_COUNT', EGU = 'count', DESC = 'Total number of counts observed')
 
     peak = aIn('PEAK',
@@ -110,21 +111,24 @@ def make_data_instance(SUFFIX, EVENT):
     records.calcout('PEAK_HIHI',
         PINI = 'YES', INPA = PROFILE, CALC = '0.9*A', OUT = peak.HIHI)
 
+    SetRecordNames(old_names)
+    return buckets, flux
+
 
 SetTemplateRecordNames(DEVICE)
-
-ImportRecord(RecordName('BUCKETS_5')).add_alias(RecordName('BUCKETS'))
-ImportRecord(RecordName('FLUX_5')).add_alias(RecordName('FLUX'))
 
 picoharp_core()
 picoharp_config()
 
 
 make_data_instance("FAST", EVENT_FAST)
-make_data_instance("5", EVENT_5S)
+buckets_5, flux_5 = make_data_instance("5", EVENT_5S)
 make_data_instance("60", EVENT_5S)
 make_data_instance("180", EVENT_5S)
 make_data_instance("ALL", EVENT_5S)
+
+buckets_5.add_alias(RecordName('BUCKETS'))
+flux_5.add_alias(RecordName('FLUX'))
 
 
 WriteRecords(sys.argv[1], Disclaimer(__file__))
