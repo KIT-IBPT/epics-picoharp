@@ -335,7 +335,7 @@ void pico_process_fast(struct pico_data *self)
 
 static void reset_accum(struct pico_data *self)
 {
-    memset(self->bufferall, 0, sizeof(self->samples_all));
+    memset(self->bufferall, 0, HISTCHAN * sizeof(double));
     self->turns_all = 0;
     self->total_count_all = 0;
     self->reset_accum = 0;
