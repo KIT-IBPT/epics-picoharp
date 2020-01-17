@@ -13,5 +13,5 @@ export EPICSDBBUILDER
 $(COMMON_DIR)/%.db: ../%.py ../support.py
 	$(PYTHON) $< $@
 
-clean::
+clean:
 	rm -f *.pyc
