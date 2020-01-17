@@ -10,6 +10,6 @@ EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
 ASYN = $(SUPPORT)/asyn/4-21
 PHLIB = $(DLS_TOOLS)/PicoHarp300/3-0-0-1/prefix
 
-EPICSDBBUILDER = 1.1
+EPICSDBBUILDER = 1.2
 
 -include $(TOP)/configure/RELEASE.private
