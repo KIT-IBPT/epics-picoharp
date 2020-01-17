@@ -3,7 +3,7 @@ include $(TOP)/configure/CONFIG
 
 USR_CFLAGS += -std=gnu99
 
-USR_CFLAGS += -Werror
+#USR_CFLAGS += -Werror
 USR_CFLAGS += -Wall -Wextra
 USR_CFLAGS += -Wno-unused-parameter
 USR_CFLAGS += -Wno-missing-field-initializers
