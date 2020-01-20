@@ -13,6 +13,9 @@ export EPICSDBBUILDER
 $(COMMON_DIR)/%.db: ../%.py ../support.py
 	$(PYTHON) $< $@
 
+%.db.d:
+	touch $@
+
 CLEANS += *.pyc
 
 ifndef BASE_3_15
