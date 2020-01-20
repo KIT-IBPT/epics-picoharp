@@ -1,7 +1,6 @@
-PYTHON = /dls_sw/prod/tools/RHEL6-x86_64/defaults/bin/dls-python
-EPICS_VERSION = 3.14.12.3
+PYTHON = python3
 
-export EPICS_BASE = /dls_sw/epics/R$(EPICS_VERSION)/base
+export EPICS_BASE = /opt/epics/base-7.0.3
 
 install: ioc/Makefile
 	make -C ioc
