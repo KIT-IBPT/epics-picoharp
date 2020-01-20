@@ -1,9 +1,6 @@
-# Common prefixes
-SUPPORT = /dls_sw/prod/R3.14.12.3/support
-
 # Module definitions
-ASYN = $(SUPPORT)/asyn/4-21
-PICOHARP = /home/mga83/epics/picoharp
+ASYN = /opt/epics/modules/asyn/4-37
+PICOHARP = /home/ankaop/tempModuleTest
 
 # EPICS Base appears last
-EPICS_BASE = /dls_sw/epics/R3.14.12.3/base
+EPICS_BASE = /opt/epics/base-7.0.3

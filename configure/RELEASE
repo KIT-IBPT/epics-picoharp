@@ -2,8 +2,8 @@
 # Run "gnumake clean uninstall install" in the application
 # top directory each time this file is changed.
 
-ASYN = /opt/epics/modules/asyn/4-37
-PHLIB = $(TOP)/PHLib/3-0-0-1
+ASYN = /opt/epics/modules/asyn-4.37
+PHLIB = $(TOP)/../PHLib
 
 EPICS_BASE = /opt/epics/base-7.0.3
 
